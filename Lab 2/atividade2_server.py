@@ -27,9 +27,10 @@ while True:
             response = '\n'.join(common_words)
 
             # respondendo a requisicao
-            novo_sock.send(response.encode("ascii"))
+            novo_sock.send(response.encode("utf-8"))
     except:
-        erro = f"ERRO: Arquivo '{filename}' não encontrado!".encode("ascii")
+        filename = str(filename, encoding="utf-8")
+        erro = f"ERRO: Arquivo '{filename}' não encontrado!".encode("utf-8")
         novo_sock.send(erro)
 
     novo_sock.close()
