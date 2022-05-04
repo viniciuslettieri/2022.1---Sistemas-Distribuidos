@@ -59,25 +59,31 @@ def atendeRequisicao(client_sock, client_addr):
                 response = '\n'.join(common_words)
 
                 client_sock.send(response.encode("utf-8"))
+                print(f"(Servidor) O cliente { client_addr } solicitou o arquivo '{ filename.decode('utf-8') }'.")
         except:
             erro = f"ERRO: Arquivo '{ filename.decode('utf-8') }' não encontrado!".encode("utf-8")
             client_sock.send(erro)
-
-        print(f"(Servidor) O cliente { client_addr } solicitou o arquivo '{ filename.decode('utf-8') }'.")
+            print(f"(Servidor) O cliente { client_addr } solicitou o arquivo inexistente '{ filename.decode('utf-8') }'.")
 
 
     print(f"(Servidor) O cliente { client_addr } encerrou a conexão.")
     client_sock.close()
+
 
 def atende_stdin(server_sock):
     comando = input()
     print(f"(Servidor) Atendendo o input '{comando}' do stdin.")
     
     if comando == "exit":
+        if len(clientes) > 0:
+            print(f"(Servidor) Aguardando todos os clientes encerrarem a conexão.")
+
         for client in clientes:
             client.join()
+            
         server_sock.close()
         sys.exit()
+
 
 def main():  
     server_sock = inicializa_servidor()
