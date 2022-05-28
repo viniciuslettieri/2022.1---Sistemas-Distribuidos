@@ -2,7 +2,7 @@
 def constroi_mensagem(string_msg):
     byte_msg = string_msg.encode("utf-8")
     msg = len(byte_msg).to_bytes(2, 'big')
-    msg.append(byte_msg)
+    msg += byte_msg
     return msg
 
 def reconstroi_mensagem(socket):
@@ -14,7 +14,7 @@ def reconstroi_mensagem(socket):
     while length > 0:
         msg = socket.recv(1024)
         length -= 1024
-        full_msg.append(msg)
+        full_msg += msg
     
     return full_msg.decode("utf-8")
     

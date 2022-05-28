@@ -1,7 +1,8 @@
 import socket
+import Utils
 
 HOST = 'localhost'  # ip/server to send messages. If it's in another computer, input the ip
-DOOR = 5000        # Door used by both client/server
+DOOR = 7678       # Door used by both client/server
 
 MESSAGE_SIZE = 256 # We will use one unsigned byte to represent size of message. 1 byte for length of message, and 2^8 - 1 for message.
 
@@ -15,16 +16,16 @@ activeSock.connect((HOST, DOOR))
 userInput = input()
 
 while (userInput != "exit"):  # exit will close communication
-    message_length_byte = len(userInput).to_bytes(1, 'little', )
-    encodedMessage = message_length_byte
-    encodedMessage += bytes(userInput, encoding='utf-8')
-    activeSock.sendall(encodedMessage)
+    #message_length_byte = len(userInput).to_bytes(1, 'little', )
+    #encodedMessage = message_length_byte
+    #encodedMessage += bytes(userInput, encoding='utf-8')
+    activeSock.sendall(Utils.constroi_mensagem(userInput))
 
     # application blocked until receives message
-    message = activeSock.recv(MESSAGE_SIZE)
+    message = Utils.reconstroi_mensagem(activeSock)
 
     # Print received message
-    print(str(message, encoding='utf-8'))
+    print(message)
 
     # Keep receiving user input
     userInput = input()
