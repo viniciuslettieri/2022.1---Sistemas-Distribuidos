@@ -1,5 +1,3 @@
-
-import json
 import socket
 from traceback import print_tb
 import Utils
