@@ -7,8 +7,10 @@ import select
 import threading
 import sys
 
+import Utils
+
 HOST = ''          # Any address will be able to reach server side
-DOOR = 5000      # Door used by both client/server
+DOOR = 7678      # Door used by both client/server
 
 MESSAGE_SIZE = 256 # We will use one unsigned byte to represent size of message. 1 byte for length of message, and 2^8 - 1 for message.
 MAX_CONNECTIONS = 5
@@ -66,46 +68,69 @@ def interface():
 def requisition(newSock, address):
     while True:
         # Keep blocked until receives message from client side
-        message = newSock.recv(MESSAGE_SIZE)
+        message = Utils.reconstroi_mensagem(newSock)
         print(message)
-        print(int.from_bytes(message[0:1], 'little'))
         # If client side doesn't send a message end communication
         if not message:
             print(str(address) + '-> ended')
             newSock.close()  # encerra a conexao com o cliente
             return
         else:
-            print("Message received from (" + str(address[1]) + "): " +
-                  str(message[1:], encoding='utf-8'))
+            print("Message received from (" + str(address[1]) + "): " + message)
 
-            command = str(message[1:], encoding='utf-8')
+            json_string = message
+            json_req = json.loads(json_string)
+            print(json_req)
 
             try:
-                answer = data_acess(command, address)
+                answer = data_acess(json_req, address[0])
 
                 if (answer):
                     # Send the same message received to client side
-                    newSock.send(
-                        bytes(answer, encoding='utf-8'))
+                    answer = Utils.constroi_mensagem(answer)
+                    newSock.sendall(answer)
             except Exception as error:
-                newSock.send(bytes(str(error), encoding='utf-8'))
+                newSock.sendall(Utils.constroi_mensagem(str(error)))
 
-
-def data_acess(command, address):
+def data_acess(json_req, address):
+    command = json_req["operacao"]
+    print(command)
     if (command == "get_lista"):
-        return get_lista(address) 
+        return get_lista(json_req, address) 
+    elif (command == "login"):
+        return login(json_req, address)
+    elif (command == "logoff"):
+        return logoff(json_req)
     else:
         raise ModuleNotFoundError()    
 
-def get_lista(address):
-    json_string = {"operacao": "get_lista", "status": str(200), "clientes": connections, "usuario": {"endereco": str(address[0]), "porta": str(DOOR)}}
+def get_lista(json_req, address):
+    command = json_req["operacao"]
+    json_string = {"operacao": command, "status": str(200), "clientes": connections, "usuario": {"endereco": str(address), "porta": str(DOOR)}}
     answer = json.dumps(json_string)
     return answer
 
+def login(json_req, address):
+    command = json_req["operacao"]
+    username = json_req["username"]
+    userdoor = json_req["porta"]
+    connections[username] = {'Endereco': str(address), 'Porta': str(userdoor)}
+    
+    json_string = {"operacao": command, "status": str(200), "mensagem": "Login com sucesso"}
+    answer = json.dumps(json_string)
+    return answer
+
+def logoff(json_req):
+    command = json_req["operacao"]
+    username = json_req["username"]
+    del connections[username]
+
+    json_string = {"operacao": command, "status": str(200), "mensagem": "Logoff com sucesso"}
+    answer = json.dumps(json_string)
+    return answer
 
 def main():
     interface()
-
 
 if __name__ == "__main__":
     main()
