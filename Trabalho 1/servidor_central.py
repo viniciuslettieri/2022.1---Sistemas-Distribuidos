@@ -1,5 +1,4 @@
 import socket
-import operator
 import json
 
 # multiprocessing
@@ -9,16 +8,14 @@ import sys
 
 import Utils
 
-HOST = ''          # Any address will be able to reach server side
-DOOR = 7678      # Door used by both client/server
+HOST = ""          # Any address will be able to reach server side
+DOOR = 5000      # Door used by both client/server
 
-MESSAGE_SIZE = 256 # We will use one unsigned byte to represent size of message. 1 byte for length of message, and 2^8 - 1 for message.
-MAX_CONNECTIONS = 5
-DICT_RETURN_SIZE = 5
+MAX_CONNECTIONS = 30
 
 inputs = [sys.stdin]
 
-connections = {'luanzinho32': {'Endereco': '10.10.10.10', 'Porta': '5000'}}
+connections = {"luanzinho32": {"Endereco": "10.10.10.10", "Porta": "5000"}}
 
 
 def createServerConnection():
@@ -59,7 +56,7 @@ def interface():
                 threads.append(newThread)
             elif ready == sys.stdin:
                 command = input()
-                if (command == 'exit'):
+                if (command == "exit"):
                     for t in threads:
                         t.join()
                     passiveSock.close()
@@ -69,10 +66,9 @@ def requisition(newSock, address):
     while True:
         # Keep blocked until receives message from client side
         message = Utils.reconstroi_mensagem(newSock)
-        print(message)
-        # If client side doesn't send a message end communication
+        # If client side doesn"t send a message end communication
         if not message:
-            print(str(address) + '-> ended')
+            print(str(address) + "-> ended")
             newSock.close()  # encerra a conexao com o cliente
             return
         else:
@@ -80,7 +76,6 @@ def requisition(newSock, address):
 
             json_string = message
             json_req = json.loads(json_string)
-            print(json_req)
 
             try:
                 answer = data_acess(json_req, address[0])
@@ -106,24 +101,32 @@ def data_acess(json_req, address):
 
 def get_lista(json_req, address):
     command = json_req["operacao"]
-    json_string = {"operacao": command, "status": str(200), "clientes": connections, "usuario": {"endereco": str(address), "porta": str(DOOR)}}
+    json_string = {"operacao": command, "status": str(200), "clientes": connections, "Usuario": {"Endereco": str(address), "Porta": str(DOOR)}}
     answer = json.dumps(json_string)
     return answer
 
 def login(json_req, address):
     command = json_req["operacao"]
     username = json_req["username"]
-    userdoor = json_req["porta"]
-    connections[username] = {'Endereco': str(address), 'Porta': str(userdoor)}
+    json_string = {}
+
+    if not (username in connections):
+        userdoor = json_req["porta"]
+        connections[username] = {"Endereco": str(address), "Porta": str(userdoor)}
+        json_string = {"operacao": command, "status": str(200), "mensagem": "Login com sucesso"}
+
+    else:
+        json_string = {"operacao": command, "status": str(400), "mensagem": "Username em Uso"}
     
-    json_string = {"operacao": command, "status": str(200), "mensagem": "Login com sucesso"}
     answer = json.dumps(json_string)
     return answer
 
 def logoff(json_req):
     command = json_req["operacao"]
     username = json_req["username"]
+    print(json_req)
     del connections[username]
+    print(json_req)
 
     json_string = {"operacao": command, "status": str(200), "mensagem": "Logoff com sucesso"}
     answer = json.dumps(json_string)
