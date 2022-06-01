@@ -1,7 +1,7 @@
 
 # Esse arquivo guarda todas as estruturas do simulador
 
-HOST_SERVIDOR_CENTRAL = 'localhost'
+HOST_SERVIDOR_CENTRAL = '10.11.0.16 '
 PORT_SERVIDOR_CENTRAL = 5000
 
 servidores = []
@@ -19,7 +19,7 @@ isLogged = False      # Logged state of the user
 serverCommands = [
     "get_lista",
     "login",
-    "Logoff"
+    "logoff"
 ]      
 
 chatCommands = [
