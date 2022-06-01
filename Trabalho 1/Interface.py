@@ -46,12 +46,19 @@ def parseUserCommand(userInput):
 
     return parsedCommand
 
+def printListaClientes():
+    print("\n> Clientes Ativos:")
+    for usuario in Estrutura.lista_clientes:
+        dados = Estrutura.lista_clientes[usuario]
+        print(f"{usuario}: ({dados['Endereco']}, {dados['Porta']})")
+
 # Handle responses from get_lista type requests
 def handleGetListaResponse(response):
     print(f"[Log: handleGetListaResponse]")
     status = response["status"]
     if(status == "200"):
         Estrutura.lista_clientes = response["clientes"]
+        printListaClientes()
     else:
         exceptionMessage = "Comando get_lista mal-sucedido erro {erro}".format(erro = status)
         raise Exception(exceptionMessage)

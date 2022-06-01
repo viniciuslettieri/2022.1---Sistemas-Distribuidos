@@ -111,7 +111,6 @@ def login(json_req, address):
     command = json_req["operacao"]
     username = json_req["username"]
     json_string = {}
-    print(connections)
     if not (username in connections):
         userdoor = json_req["porta"]
         connections[username] = {"Endereco": str(address), "Porta": str(userdoor)}

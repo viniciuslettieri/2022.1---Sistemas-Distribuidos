@@ -36,7 +36,7 @@ class ModuloCoordenadorServidores:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind((self.HOST, self.PORT))
         sock.listen(5) 
-        sock.setblocking(False)
+        # sock.setblocking(False)
 
         print(f"(Servidor) O servidor foi inicializado na porta { self.PORT }.")
         self.sock = sock

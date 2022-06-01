@@ -6,7 +6,7 @@ class ModuloCliente:
     def __init__(self, HOST, PORT):
         print("[Novo ModuloCliente]", HOST, PORT)
         self.HOST = HOST
-        self.PORT = PORT
+        self.PORT = int(PORT)
         self.inicializa()
 
     def inicializa(self):
