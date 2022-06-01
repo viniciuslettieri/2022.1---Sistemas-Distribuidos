@@ -1,11 +1,20 @@
 import string
 import threading
 import json
+import argparse
 
 import Estrutura
 from Utils import constroi_mensagem, reconstroi_mensagem
 from ModuloCliente import ModuloCliente
 from ModuloServidor import ModuloServidor, ModuloCoordenadorServidores
+
+# Makes a log if the -l (--log) flag is active
+#def printLog(message):
+#    # Gets flag from command line
+#    parser = argparse.ArgumentParser()
+#
+#   parser.add_argument("-l", "--log", help="Log", type=bool)
+#   if () print(f"[Log: ${message}]")
 
 # Guarantees that the user can only use the commands allowed in their current log status
 def checkLoginStatus(operation):
