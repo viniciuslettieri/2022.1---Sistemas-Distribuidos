@@ -21,7 +21,9 @@ connections = {"luanzinho32": {"Endereco": "10.10.10.10", "Porta": "5000"}}
 def createServerConnection():
     # create socket (instantiation)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+    
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    
     # Bind door and interface to communicate with clients
     sock.bind((HOST, DOOR))
 
@@ -109,7 +111,7 @@ def login(json_req, address):
     command = json_req["operacao"]
     username = json_req["username"]
     json_string = {}
-
+    print(connections)
     if not (username in connections):
         userdoor = json_req["porta"]
         connections[username] = {"Endereco": str(address), "Porta": str(userdoor)}
