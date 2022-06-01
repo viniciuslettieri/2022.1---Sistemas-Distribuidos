@@ -1,7 +1,7 @@
 
 # Esse arquivo guarda todas as estruturas do simulador
 
-HOST_SERVIDOR_CENTRAL = '10.11.0.16 '
+HOST_SERVIDOR_CENTRAL = 'localhost'
 PORT_SERVIDOR_CENTRAL = 5000
 
 servidores = []
