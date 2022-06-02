@@ -17,4 +17,10 @@ def reconstroi_mensagem(socket):
         full_msg += msg
     
     return full_msg.decode("utf-8")
+
+
+logging = True
+def printLog(message, *args):
+    if logging:
+        print(message, *args)
     

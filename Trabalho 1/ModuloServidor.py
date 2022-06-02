@@ -3,12 +3,12 @@ import threading
 import socket
 
 import Estrutura
-from Utils import constroi_mensagem, reconstroi_mensagem
+from Utils import constroi_mensagem, reconstroi_mensagem, printLog
 
 
 class ModuloServidor:
     def __init__(self, sock):
-        print("[Novo ModuloServidor]")
+        printLog("[Novo ModuloServidor]")
         self.sock = sock
 
     def atende_comunicacao(self):
@@ -25,21 +25,22 @@ class ModuloServidor:
 
 class ModuloCoordenadorServidores:
     def __init__(self, HOST, PORT):
-        print("[Novo ModuloCoordenadorServidores]", HOST, PORT)
+        printLog("[Log: Novo ModuloCoordenadorServidores]", HOST, PORT)
         self.HOST = HOST
         self.PORT = int(PORT)
         self.inicializa()
 
     def inicializa(self):
         """ Cria e retorna o socket passivo para o servidor """
-        sock = socket.socket()   # default: socket.AF_INET, socket.SOCK_STREAM
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.bind((self.HOST, self.PORT))
-        sock.listen(5) 
-        # sock.setblocking(False)
+        if not hasattr(self, "sock"):
+            sock = socket.socket()   # default: socket.AF_INET, socket.SOCK_STREAM
+            # sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            sock.bind((self.HOST, self.PORT))
+            sock.listen(5) 
+            # sock.setblocking(False)
 
-        print(f"(Servidor) O servidor foi inicializado na porta { self.PORT }.")
-        self.sock = sock
+            printLog(f"[Log: O servidor foi inicializado na porta { self.PORT }.")
+            self.sock = sock
 
     def aceita_conexao(self):
         """ Realiza a conexão com o cliente e devolve o novo socket direto """
@@ -48,11 +49,13 @@ class ModuloCoordenadorServidores:
         return client_sock, client_addr
 
     def trata_novos_servidores(self):
-        print("[trata novos servidores]")
+        printLog("[Log: trata novos servidores]")
         while True:
+            printLog("[Log: Aguardando nova conexao]")
             client_sock, client_addr = self.aceita_conexao()
-            print("aceito")
+            printLog("[Log: Conexao aceita]")
             novo_servidor = ModuloServidor(client_sock)
             nova_thread_servidor = threading.Thread(target=novo_servidor.atende_comunicacao)   
             nova_thread_servidor.start()
             Estrutura.servidores.append(novo_servidor) 
+        print("[Coordenador Finalizou Tratamento de Novos Servidores]")

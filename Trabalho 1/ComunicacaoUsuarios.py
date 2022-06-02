@@ -10,7 +10,6 @@ from Interface import *
 def main():  
     # global interface, clienteServidorCentral, HOST_SERVIDOR_CENTRAL, PORT_SERVIDOR_CENTRAL
     
-    print(Estrutura.clienteServidorCentral)
     Estrutura.clienteServidorCentral = ModuloCliente(
         Estrutura.HOST_SERVIDOR_CENTRAL, Estrutura.PORT_SERVIDOR_CENTRAL
     )

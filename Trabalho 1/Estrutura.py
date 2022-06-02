@@ -11,7 +11,7 @@ userport = None
 # interface = None
 lista_clientes = {}
 
-clienteServidorCentral = "ola"
+clienteServidorCentral = None
 
 isLogged = False      # Logged state of the user
 
