@@ -8,20 +8,26 @@ from Utils import constroi_mensagem, reconstroi_mensagem, printLog
 
 class ModuloServidor:
     def __init__(self, sock):
-        printLog("[Novo ModuloServidor]")
+        printLog("[Log: Novo ModuloServidor]")
         self.sock = sock
 
     def atende_comunicacao(self):
         """ Realiza a comunicação com o cliente, atendendo a requisicao """
 
         while True:
-            print("[reconstruindo mensagem]")
+            printLog("[Log: reconstruindo mensagem]")
             mensagem = reconstroi_mensagem(self.sock)
             if not mensagem: break
             print(mensagem)
 
-        print(f"(Servidor) O usuario { self.sock } encerrou a conexão.")
+        printLog(f"[Log: O usuario { self.sock } encerrou a conexão]")
         self.sock.close()
+
+        Estrutura.coordenadorServidores.removeServidor(self)
+    
+    def encerra(self):
+        self.sock.close()
+        printLog(f"[Log: Logoff ModuloServidor com sucesso]")
 
 class ModuloCoordenadorServidores:
     def __init__(self, HOST, PORT):
@@ -29,6 +35,7 @@ class ModuloCoordenadorServidores:
         self.HOST = HOST
         self.PORT = int(PORT)
         self.inicializa()
+        self.servidores = []    # Guarda os ModuloServidor
 
     def inicializa(self):
         """ Cria e retorna o socket passivo para o servidor """
@@ -45,7 +52,7 @@ class ModuloCoordenadorServidores:
     def aceita_conexao(self):
         """ Realiza a conexão com o cliente e devolve o novo socket direto """
         client_sock, client_addr = self.sock.accept()
-        print(f"(Servidor) O servidor aceitou a conexão de { client_addr }.")
+        printLog(f"[Log: O servidor aceitou a conexão de { client_addr }]")
         return client_sock, client_addr
 
     def trata_novos_servidores(self):
@@ -57,5 +64,18 @@ class ModuloCoordenadorServidores:
             novo_servidor = ModuloServidor(client_sock)
             nova_thread_servidor = threading.Thread(target=novo_servidor.atende_comunicacao)   
             nova_thread_servidor.start()
-            Estrutura.servidores.append(novo_servidor) 
-        print("[Coordenador Finalizou Tratamento de Novos Servidores]")
+            printLog(f"[Log: Nova Thread {nova_thread_servidor.name} {nova_thread_servidor.ident}]")
+            self.servidores.append(novo_servidor) 
+        printLog("[Log: Coordenador Finalizou Tratamento de Novos Servidores]")
+    
+    def encerra(self):
+        printLog(f"[Log: Logoff ModuloCoordenadorServidores]")
+        self.sock.close()
+        for servidor in self.servidores:
+            servidor.encerra()
+        self.servidores = []
+        printLog(f"[Log: Logoff ModuloCoordenadorServidores com Sucesso]")
+
+    def removeServidor(self, servidor):
+        self.servidores.remove(servidor)
+        printLog(f"[Log: removeServidor - Lista {self.servidores}]")

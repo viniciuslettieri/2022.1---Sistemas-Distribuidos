@@ -25,3 +25,7 @@ class ModuloCliente:
     def recebeMensagem(self):
         response = reconstroi_mensagem(self.sock)
         return response
+
+    def encerra(self):
+        self.sock.close()
+        printLog(f"[Log: Logoff ModuloCliente com Sucesso]")

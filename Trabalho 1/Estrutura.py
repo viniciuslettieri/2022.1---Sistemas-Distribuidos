@@ -4,14 +4,13 @@
 HOST_SERVIDOR_CENTRAL = 'localhost'
 PORT_SERVIDOR_CENTRAL = 5000
 
-servidores = []
-clientes = {}
 username = None
 userport = None
-# interface = None
-lista_clientes = {}
+clientes = {}               # Guarda os ModuloCliente
+lista_usuarios = {}         # Guarda a lista dos usuarios ativos
 
 clienteServidorCentral = None
+coordenadorServidores = None
 
 isLogged = False      # Logged state of the user
 
@@ -21,7 +20,6 @@ serverCommands = [
     "login",
     "logoff"
 ]      
-
 chatCommands = [
     "chat",
     "message"

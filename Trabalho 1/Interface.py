@@ -20,19 +20,20 @@ from ModuloServidor import ModuloServidor, ModuloCoordenadorServidores
 def checkLoginStatus(operation):
     printLog(f"[Log: checkLoginStatus]")
     needsLogin = False if operation == "login" else True
-    if(needsLogin and not Estrutura.isLogged):
-        raise Exception("Você precisa fazer login antes de realizar essa operação")
-    elif(not needsLogin and Estrutura.isLogged):
-        raise Exception("Voce já fez login. Não é possível fazer novamente")
+    if needsLogin and not Estrutura.isLogged:
+        raise Exception("Você precisa fazer login antes de realizar essa operação!")
+    elif not needsLogin and Estrutura.isLogged:
+        raise Exception("Voce já fez login. Não é possível fazer novamente!")
 
 def handleLoginInitializations():
     printLog(f"[Log: handleLoginInitializations]")
     try:
-        coordenador = ModuloCoordenadorServidores('', Estrutura.userport)
-        thread_coordenador = threading.Thread(target=coordenador.trata_novos_servidores)   
+        Estrutura.coordenadorServidores = ModuloCoordenadorServidores('', Estrutura.userport)
+        thread_coordenador = threading.Thread(target=Estrutura.coordenadorServidores.trata_novos_servidores)   
         thread_coordenador.start()
+        printLog(f"[Log: Nova Thread {thread_coordenador.name} {thread_coordenador.ident}]")
     except:
-        print("Erro Criando ")
+        raise Exception("Erro criando o servidor na porta escolhida!")
 
 # Parses a command made by the user so the server can understand it    
 def parseUserCommand(userInput):
@@ -43,25 +44,33 @@ def parseUserCommand(userInput):
 
     checkLoginStatus(operation)
 
-    if operation == "get_lista":
-        parsedCommand = '{"operacao": "get_lista"}'
+    if operation == "get_lista":            # /get_lista
+        if len(secoes) == 1:
+            parsedCommand = '{"operacao": "get_lista"}'
+        else:
+            raise Exception("O comando 'get_lista' requer 0 parâmetros.")
 
-    elif operation == "login":
-        parsed_username = secoes[1]
-        parsed_port = secoes[2]
-        parsedCommand = '{"operacao": "login", "username": "' + parsed_username + '" ,"porta": "' + parsed_port + '"}'
-        Estrutura.userport = parsed_port
+    elif operation == "login":              # /login [username] [porta]
+        if len(secoes) == 3:
+            parsed_username = secoes[1]
+            parsed_port = secoes[2]
+            parsedCommand = '{"operacao": "login", "username": "' + parsed_username + '" ,"porta": "' + parsed_port + '"}'
+            Estrutura.userport = parsed_port
+        else:
+            raise Exception("O comando 'login' requer 2 parâmetros: [username] [porta]")
 
-    elif operation == "logoff":
-        parsed_username  = secoes[1]
-        parsedCommand = '{"operacao": "logoff", "username": "' + parsed_username + '"}'
-
+    elif operation == "logoff":             # /logoff
+        if len(secoes) == 1:                
+            parsedCommand = '{"operacao": "logoff", "username": "' + Estrutura.username + '"}'
+        else:
+            raise Exception("O comando 'logoff' requer 0 parâmetros.")
+    
     return parsedCommand
 
 def printListaClientes():
     print("\n> Clientes Ativos:")
-    for usuario in Estrutura.lista_clientes:
-        dados = Estrutura.lista_clientes[usuario]
+    for usuario in Estrutura.lista_usuarios:
+        dados = Estrutura.lista_usuarios[usuario]
         print(f"{usuario}: ({dados['Endereco']}, {dados['Porta']})")
     print()
 
@@ -69,8 +78,8 @@ def printListaClientes():
 def handleGetListaResponse(response):
     printLog(f"[Log: handleGetListaResponse]")
     status = response["status"]
-    if(status == "200"):
-        Estrutura.lista_clientes = response["clientes"]
+    if status == "200":
+        Estrutura.lista_usuarios = response["clientes"]
         printListaClientes()
     else:
         exceptionMessage = "Comando get_lista mal-sucedido erro {erro}".format(erro = status)
@@ -82,50 +91,58 @@ def handleLoginResponse(response, userInput):
     status = response["status"]
     parsed_username = userInput.split(" ")[1]
 
-    if(status == "200"):
+    if status == "200":
         print("Bem vindo " + parsed_username + "!")
         Estrutura.isLogged = True
         Estrutura.username = parsed_username
-        handleLoginInitializations()
     else:
         exceptionMessage = f"O username {parsed_username} já existe :(\n Tente outro ;)"
         raise Exception(exceptionMessage)
 
 # Handle response from logoff type requests
 def handleLogoffResponse(response, userInput):
-    print(f"[Log: handleLogoffResponse]")
+    printLog(f"[Log: handleLogoffResponse]")
 
     status = response["status"]
-    parsed_username = userInput.split(" ")[1]
 
-    if(status =="200"):
-        for connection in conections:#End all peer to peer conections
-            connection.close()
+    if status =="200":
+        Estrutura.coordenadorServidores.encerra()
+
+        for username in Estrutura.clientes:
+            Estrutura.clientes[username].encerra()
+        Estrutura.clientes.clear()
+
         print("Você foi desconectado com sucesso\n Até a próxima :)")
         Estrutura.isLogged = False
     else:
-        exceptionMessage = f"Algo de errado aconteceu ao tentar deslogar {parsed_username}. Tente novamente."
+        exceptionMessage = f"Algo de errado aconteceu ao tentar deslogar. Tente novamente."
         raise Exception(exceptionMessage)
 
 # Central function when dealing with server Commands
 def handleServerRequest(userInput):
-    print(f"[Log: handleServerRequest]")
+    printLog(f"[Log: handleServerRequest]")
     try:
         parsedInput = parseUserCommand(userInput)
+        secoes = userInput.split(" ")
+        operationType = secoes[0]
+
+        # Verifica se o servidor pode ser criado na porta
+        if operationType == "login":
+            handleLoginInitializations()
         
         Estrutura.clienteServidorCentral.enviaMensagem(parsedInput)
         response_message = Estrutura.clienteServidorCentral.recebeMensagem()
         response = json.loads(response_message)
 
-        print(f"[Log: reponse login - {response}]")
+        printLog(f"[Log: reponse login - {response}]")
 
         operationType = response["operacao"]
 
-        if(operationType == "get_lista"):
+        if operationType == "get_lista":
             handleGetListaResponse(response)
-        elif(operationType =="login"):
+        elif operationType =="login":
             handleLoginResponse(response,userInput)
-        elif(operationType=="logoff"):
+        elif operationType=="logoff":
             handleLogoffResponse(response,userInput)
         else:
             raise Exception("Operação desconhecida")
@@ -151,9 +168,9 @@ def handleChatRequest(userInput):
                 print(f"Você já iniciou um chat com '{parsed_username}'")
             elif parsed_username == Estrutura.username:
                 print("Não é possível iniciar um chat com o seu próprio usuário, tente uma pessoa diferente!")
-            elif parsed_username in Estrutura.lista_clientes:
-                HOST = Estrutura.lista_clientes[parsed_username]["Endereco"]
-                PORT = Estrutura.lista_clientes[parsed_username]["Porta"]
+            elif parsed_username in Estrutura.lista_usuarios:
+                HOST = Estrutura.lista_usuarios[parsed_username]["Endereco"]
+                PORT = Estrutura.lista_usuarios[parsed_username]["Porta"]
                 printLog(f"[Log: chat created {HOST} {PORT}]")
                 novo_cliente = ModuloCliente(HOST, PORT)
                 Estrutura.clientes[parsed_username] = novo_cliente     
@@ -176,6 +193,20 @@ def handleChatRequest(userInput):
     except Exception as error:
         print(error)
 
+def handleDebugCommand():
+    print("\nActive threads:")
+    for thread in threading.enumerate(): 
+        if thread.name == "MainThread":
+            print(thread.name)
+        else:
+            print(thread.name, thread.ident)
+    print("\nClientes: ", Estrutura.clientes)
+    print("\nLista Clientes: ", Estrutura.lista_usuarios)
+    print("\nEstá logado: ", Estrutura.isLogged)
+    if Estrutura.isLogged:
+        print("\nServidores Ativos: ", Estrutura.coordenadorServidores.servidores)
+    print()
+
 # Deals with the different possible inputs passed by the user
 def handleUserInput(userInput):
     printLog(f"[Log: handleUserInput]")
@@ -185,9 +216,12 @@ def handleUserInput(userInput):
             handleServerRequest(userInput[1:])
         elif command in Estrutura.chatCommands:
             handleChatRequest(userInput[1:])
+        elif command == "debug":
+            handleDebugCommand()
     else:
         printLog(f"[Log: nao eh comando]")
         pass # aqui vamos adicionar o envio de mensagem mas por enquanto usa \message
+
 
 def atende_stdin():
     while True:
