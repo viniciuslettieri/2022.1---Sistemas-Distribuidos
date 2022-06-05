@@ -18,9 +18,18 @@ def reconstroi_mensagem(socket):
     
     return full_msg.decode("utf-8")
 
-
-logging = True
 def printLog(message, *args):
     if logging:
         print(message, *args)
+
+log = False
+
+def activateLog():
+    global log
+    log = True
+
+def printLog(message, *args):
+    global log
+    if log: 
+        print(f"[Log: ${message}]", *args)
     
