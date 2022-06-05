@@ -11,14 +11,17 @@ class ModuloServidor:
         printLog("[Log: Novo ModuloServidor]")
         self.sock = sock
 
-    def atende_comunicacao(self):
+    def atende_comunicacao(self, data):
         """ Realiza a comunicação com o cliente, atendendo a requisicao """
+
+        (address, port) = data
 
         while True:
             printLog("[Log: reconstruindo mensagem]")
             mensagem = reconstroi_mensagem(self.sock)
             if not mensagem: break
-            print(mensagem)
+            
+            # To Do: Guardar o histórico de mensagens daquele usuário
 
         printLog(f"[Log: O usuario { self.sock } encerrou a conexão]")
         self.sock.close()
@@ -62,7 +65,7 @@ class ModuloCoordenadorServidores:
             client_sock, client_addr = self.aceita_conexao()
             printLog("[Log: Conexao aceita]")
             novo_servidor = ModuloServidor(client_sock)
-            nova_thread_servidor = threading.Thread(target=novo_servidor.atende_comunicacao)   
+            nova_thread_servidor = threading.Thread(target=novo_servidor.atende_comunicacao, args=(client_addr,))   
             nova_thread_servidor.start()
             printLog(f"[Log: Nova Thread {nova_thread_servidor.name} {nova_thread_servidor.ident}]")
             self.servidores.append(novo_servidor) 

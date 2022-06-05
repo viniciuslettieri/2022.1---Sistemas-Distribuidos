@@ -60,8 +60,8 @@ def parseUserCommand(userInput):
     return parsedCommand
 
 def printListaClientes():
-    global selected
     clearTerminal()
+    print("\u001b[31mA qualquer momento, digite :r para refrescar a lista de usuários e mensagens\u001b[0m")
     print("Escolha um usuário para começar uma conversa: ")
     print("\nClientes Ativos: \n")
     for usuario in Estrutura.lista_usuarios:
@@ -168,7 +168,7 @@ def handleChatRequest(userInput):
                 PORT = Estrutura.lista_usuarios[parsed_username]["Porta"]
                 printLog(f"[Log: chat created {HOST} {PORT}]")
                 novo_cliente = ModuloCliente(HOST, PORT)
-                Estrutura.clientes[parsed_username] = novo_cliente     
+                Estrutura.clientes[parsed_username] = novo_cliente
             else:
                 print("Não foi possível encontrar o usuário.")
                 print("Tente usar o comando '/get_lista' para recuperar os usuários ativos.")
@@ -221,10 +221,13 @@ def atende_stdin():
     clearTerminal()
     while not Estrutura.isLogged:
         loginInterface()
-    getList()
-    usuario = startChat()
     while True:
-        sendMessage(usuario)
+        getList()
+        usuario = startChat()
+        print("Mande as suas mensagens: \n")
+        while True:
+            close = sendMessage(usuario)
+            if close: break
 
 def clearTerminal():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -242,13 +245,24 @@ def getList():
     handleUserInput(comando)
 
 def startChat():
-    usuario = input("Digite o usuario que deseja conversar com: ")
-    comando = f"/chat {usuario}"
+    mensagem = input("Digite o usuario que deseja conversar com: ")
+    if mensagem == ":r": 
+        getList()
+        return startChat()
+    comando = f"/chat {mensagem}"
     handleUserInput(comando)
-
-    return usuario
+    return mensagem
 
 def sendMessage(usuario):
     message = input()
+    if message == ":q": return True
+    showMessages(usuario)
     comando = f"/message {usuario} {message}"
     handleUserInput(comando)
+    return False
+
+def showMessages(usuario):
+    if not usuario in Estrutura.messages: Estrutura.messages[usuario] = []
+    messages = Estrutura.messages[usuario]
+    for message in messages:
+        print(f"{usuario}:\t {message}")
