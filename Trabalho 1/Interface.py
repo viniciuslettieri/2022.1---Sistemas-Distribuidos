@@ -66,7 +66,14 @@ def printListaClientes():
     print("\nClientes Ativos: \n")
     for usuario in Estrutura.lista_usuarios:
         dados = Estrutura.lista_usuarios[usuario]
-        print(f"{usuario}: ({dados['Endereco']}, {dados['Porta']})")
+
+        key = (min(usuario, Estrutura.username), max(usuario, Estrutura.username))
+        if key not in Estrutura.newMessages: Estrutura.newMessages[key] = 0
+        newMessages = Estrutura.newMessages[key]
+
+        print(f"{usuario}: ({dados['Endereco']}, {dados['Porta']})", end="")
+        if newMessages: print(f" \u001b[33m{newMessages} mensagens novas \u001b[0m")
+        else: print()
     print()
 
 # Handle responses from get_lista type requests
@@ -275,6 +282,10 @@ def showMessages(usuario):
 
     key = (min(usuario, Estrutura.username), max(usuario, Estrutura.username))
     if key not in Estrutura.messages: Estrutura.messages[key] = []
+
     messages = Estrutura.messages[key]
     for username, message in messages:
         print(f"{username}: {message}")
+
+    if key not in Estrutura.newMessages: Estrutura.newMessages[key] = 0
+    Estrutura.newMessages[key] = 0

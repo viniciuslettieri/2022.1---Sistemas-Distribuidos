@@ -8,7 +8,8 @@ username = None
 userport = None
 clientes = {}               # Guarda os ModuloCliente
 lista_usuarios = {}         # Guarda a lista dos usuarios ativos
-messages = {}               # Guarda as mensagens por usuário
+messages = {}               # Guarda todas as mensagens por par de usuários
+newMessages = {}            # Guarda a quantidade de mensagens novas por par de usuários
 
 clienteServidorCentral = None
 coordenadorServidores = None
