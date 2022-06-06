@@ -1,5 +1,6 @@
 import socket
 import json
+import os
 
 # multiprocessing
 import select
@@ -8,6 +9,13 @@ import sys
 
 import Utils
 
+# window interface imports
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+
+
 HOST = ""          # Any address will be able to reach server side
 DOOR = 5000      # Door used by both client/server
 
@@ -15,8 +23,12 @@ MAX_CONNECTIONS = 30
 
 inputs = [sys.stdin]
 
-connections = {"luanzinho32": {"Endereco": "10.10.10.10", "Porta": "5000"}}
+connections = {}
 
+connections_changed = False
+
+# Convert data to ListStore (lists that TreeViews can display)
+connections_list_store = Gtk.ListStore(str, str, str)
 
 def createServerConnection():
     # create socket (instantiation)
@@ -41,7 +53,9 @@ def interface():
     threads = []
     passiveSock = createServerConnection()
 
-    print("Accepting Connections...")
+    newThread = threading.Thread(target=drawConnections)
+    newThread.start()
+    threads.append(newThread)
 
     while True:
         r, escrita, excecao = select.select(inputs, [], [])
@@ -91,7 +105,7 @@ def requisition(newSock, address):
 
 def data_acess(json_req, address):
     command = json_req["operacao"]
-    print(command)
+
     if (command == "get_lista"):
         return get_lista(json_req, address) 
     elif (command == "login"):
@@ -102,19 +116,30 @@ def data_acess(json_req, address):
         raise ModuleNotFoundError()    
 
 def get_lista(json_req, address):
-    command = json_req["operacao"]
-    json_string = {"operacao": command, "status": str(200), "clientes": connections, "Usuario": {"Endereco": str(address), "Porta": str(DOOR)}}
+    try:
+        command = json_req["operacao"]
+        json_string = {"operacao": command, "status": str(200), "clientes": connections, "Usuario": {"Endereco": str(address), "Porta": str(DOOR)}}
+    except Exception as error:
+        json_string = {"operacao": command, "status": str(400), "mensagem": "Erro ao obter a lista"}
+
     answer = json.dumps(json_string)
     return answer
 
 def login(json_req, address):
     command = json_req["operacao"]
     username = json_req["username"]
+    userdoor = json_req["porta"]
     json_string = {}
     if not (username in connections):
-        userdoor = json_req["porta"]
         connections[username] = {"Endereco": str(address), "Porta": str(userdoor)}
+        connections_list_store.append(list((
+                username, 
+                connections[username]["Endereco"], 
+                connections[username]["Porta"]
+                )))
+
         json_string = {"operacao": command, "status": str(200), "mensagem": "Login com sucesso"}
+        connections_changed = True
 
     else:
         json_string = {"operacao": command, "status": str(400), "mensagem": "Username em Uso"}
@@ -123,15 +148,73 @@ def login(json_req, address):
     return answer
 
 def logoff(json_req):
-    command = json_req["operacao"]
-    username = json_req["username"]
-    print(json_req)
-    del connections[username]
-    print(json_req)
+    try:
+        command = json_req["operacao"]
+        username = json_req["username"]
 
-    json_string = {"operacao": command, "status": str(200), "mensagem": "Logoff com sucesso"}
+        if not (username in connections):
+            raise Exception()
+
+        del connections[username]
+        
+        for row in connections_list_store:
+            if (row[0] == username):
+                connections_list_store.remove(row.iter)
+                break
+
+        json_string = {"operacao": command, "status": str(200), "mensagem": "Logoff com sucesso"}
+        connections_changed = True
+    except Exception:
+        json_string = {"operacao": command, "status": str(400), "mensagem": "Erro no Logoff"}
+
     answer = json.dumps(json_string)
     return answer
+
+class MyWindow(Gtk.Window):
+    def __init__(self):
+        Gtk.Window.__init__(self, title="Central Server Connections")
+        Gtk.Window.set_default_size(self, 640, 480)
+        layout = Gtk.Box()
+        self.add(layout)
+
+        for connection in connections:
+
+            connections_list_store.append(list((
+                connection, 
+                connections[connection]["Endereco"], 
+                connections[connection]["Porta"]
+                )))
+
+        # TreeView is the item that is displayed
+        connections_tree_view = Gtk.TreeView(connections_list_store)
+
+        for i, col_title in enumerate(["Username", "Address", "Door"]):
+
+            # Render means how to draw the data
+            renderer = Gtk.CellRendererText()
+
+            # Create colmns (title is column number)
+            column = Gtk.TreeViewColumn(col_title, renderer, text=i)
+
+            # Add column to TreeView
+            connections_tree_view.append_column(column)
+        
+        # Add TreeView to main layout
+        layout.pack_start(connections_tree_view, True, True, 0)
+
+        os.system("clear")
+        print("Central Server Online - Accepting Connections...")
+
+def drawConnections():
+
+    win = MyWindow()
+    win.connect("destroy", Gtk.main_quit)
+    win.show_all()
+    Gtk.main()
+
+    print("Central Server Offline - Not Receiving Connections...")
+    return
+
 
 def main():
     interface()
