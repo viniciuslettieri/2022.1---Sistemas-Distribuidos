@@ -5,7 +5,7 @@ import threading
 import Utils
 
 
-HOST = 'localhost'      # ip/server to send messages. If it's in another computer, input the ip
+HOST = '10.11.0.12'      # ip/server to send messages. If it's in another computer, input the ip
 DOOR = 5000             # Door used by both client/server
 
 MESSAGE_SIZE = 256      # We will use one unsigned byte to represent size of message. 1 byte for length of message, and 2^8 - 1 for message.

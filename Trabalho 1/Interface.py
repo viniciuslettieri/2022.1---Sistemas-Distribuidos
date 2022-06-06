@@ -46,7 +46,7 @@ def parseUserCommand(userInput):
         if len(secoes) == 3:
             parsed_username = secoes[1]
             parsed_port = secoes[2]
-            parsedCommand = '{"operacao": "login", "username": "' + parsed_username + '" ,"porta": "' + parsed_port + '"}'
+            parsedCommand = '{"operacao": "login", "username": "' + parsed_username + '" ,"porta": ' + parsed_port + '}'
             Estrutura.userport = parsed_port
         else:
             raise Exception("O comando 'login' requer 2 parâmetros: [username] [porta]")
@@ -80,7 +80,7 @@ def printListaClientes():
 def handleGetListaResponse(response):
     printLog(f"handleGetListaResponse")
     status = response["status"]
-    if status == "200":
+    if status == 200:
         Estrutura.lista_usuarios = response["clientes"]
         printListaClientes()
     else:
@@ -93,7 +93,7 @@ def handleLoginResponse(response, userInput):
     status = response["status"]
     parsed_username = userInput.split(" ")[1]
 
-    if status == "200":
+    if status == 200:
         print("Bem vindo " + parsed_username + "!")
         Estrutura.isLogged = True
         Estrutura.username = parsed_username
@@ -107,7 +107,7 @@ def handleLogoffResponse(response, userInput):
 
     status = response["status"]
 
-    if status =="200":
+    if status ==200:
         Estrutura.coordenadorServidores.encerra()
 
         for username in Estrutura.clientes:
@@ -235,8 +235,11 @@ def atende_stdin():
     while not Estrutura.isLogged:
         loginInterface()
     while True:
+        print("x")
         getList()
+        print("y")
         usuario = startChat()
+        print("z")
         while True:
             showMessages(usuario)
             code = sendMessage(usuario)
@@ -244,12 +247,13 @@ def atende_stdin():
             elif code == 2: continue
 
 def clearTerminal():
-    os.system('cls' if os.name == 'nt' else 'clear')
+    #os.system('cls' if os.name == 'nt' else 'clear')
+    pass
 
 def loginInterface():
     print("Para entrar no bate-papo, primeiro precisamos que você se conecte.")
     usuario = input("Usuario: ")
-    porta = input("Porta: ")
+    porta = int(input("Porta: "))
     comando = f"/login {usuario} {porta}"
     handleUserInput(comando)
     print()

@@ -21,9 +21,12 @@ class ModuloCliente:
         printLog("[Log: enviaMensagem]")
         byte_msg = constroi_mensagem(msg)
         self.sock.send(byte_msg)
+        printLog("[Log: mensagem enviada]")
 
     def recebeMensagem(self):
+        printLog("[Log: recebeMensagem]")
         response = reconstroi_mensagem(self.sock)
+        printLog(f"[Log: mensagem recebida {response}]")
         return response
 
     def encerra(self):

@@ -8,7 +8,7 @@ import sys
 
 import Utils
 
-HOST = ""          # Any address will be able to reach server side
+HOST = "10.11.0.12"          # Any address will be able to reach server side
 DOOR = 5000      # Door used by both client/server
 
 MAX_CONNECTIONS = 30
@@ -24,6 +24,7 @@ def createServerConnection():
 
     # Bind door and interface to communicate with clients
     sock.bind((HOST, DOOR))
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     # Set max number of connections and wait for at least one connection
     sock.listen(MAX_CONNECTIONS)
@@ -101,7 +102,7 @@ def data_acess(json_req, address):
 
 def get_lista(json_req, address):
     command = json_req["operacao"]
-    json_string = {"operacao": command, "status": str(200), "clientes": connections, "Usuario": {"Endereco": str(address), "Porta": str(DOOR)}}
+    json_string = {"operacao": command, "status": 200, "clientes": connections, "Usuario": {"Endereco": str(address), "Porta": int(DOOR)}}
     answer = json.dumps(json_string)
     return answer
 
@@ -109,14 +110,14 @@ def login(json_req, address):
     command = json_req["operacao"]
     username = json_req["username"]
     json_string = {}
-
+    print(connections)
     if not (username in connections):
         userdoor = json_req["porta"]
-        connections[username] = {"Endereco": str(address), "Porta": str(userdoor)}
-        json_string = {"operacao": command, "status": str(200), "mensagem": "Login com sucesso"}
+        connections[username] = {"Endereco": str(address), "Porta": int(userdoor)}
+        json_string = {"operacao": command, "status": 200, "mensagem": "Login com sucesso"}
 
     else:
-        json_string = {"operacao": command, "status": str(400), "mensagem": "Username em Uso"}
+        json_string = {"operacao": command, "status": 400, "mensagem": "Username em Uso"}
     
     answer = json.dumps(json_string)
     return answer
@@ -128,7 +129,7 @@ def logoff(json_req):
     del connections[username]
     print(json_req)
 
-    json_string = {"operacao": command, "status": str(200), "mensagem": "Logoff com sucesso"}
+    json_string = {"operacao": command, "status": 200, "mensagem": "Logoff com sucesso"}
     answer = json.dumps(json_string)
     return answer
 
