@@ -260,11 +260,11 @@ def getList():
 
 def startChat():
     mensagem = input("Digite o usuario que deseja conversar com: ")
-    if mensagem == ":r": 
-        getList()
-        return startChat()
     comando = f"/chat {mensagem}"
     handleUserInput(comando)
+    if mensagem == ":r" or mensagem not in Estrutura.clientes:
+        getList()
+        return startChat()
     return mensagem
 
 def sendMessage(usuario):

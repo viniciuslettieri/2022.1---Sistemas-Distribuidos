@@ -28,4 +28,3 @@ def printLog(message, *args):
     global log
     if log: 
         print(f"[Log: ${message}]", *args)
-    
