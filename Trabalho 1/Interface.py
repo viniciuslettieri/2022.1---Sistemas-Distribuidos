@@ -61,7 +61,7 @@ def parseUserCommand(userInput):
 
 def printListaClientes():
     clearTerminal()
-    print("\u001b[31mA qualquer momento, digite :r para refrescar a lista de usuários e mensagens\u001b[0m")
+    print("\u001b[31mDigite :r para refrescar a lista de usuários\u001b[0m")
     print("Escolha um usuário para começar uma conversa: ")
     print("\nClientes Ativos: \n")
     for usuario in Estrutura.lista_usuarios:
@@ -181,7 +181,13 @@ def handleChatRequest(userInput):
 
             if parsed_username in Estrutura.clientes.keys():
                 cliente = Estrutura.clientes[parsed_username]
-                cliente.enviaMensagem(mensagem)
+                
+                key = (min(parsed_username, Estrutura.username), max(parsed_username, Estrutura.username))
+                if key not in Estrutura.messages: Estrutura.messages[key] = []
+                Estrutura.messages[key] += [(Estrutura.username, mensagem)]
+                finalMessage = json.dumps({"username": Estrutura.username, "mensagem": mensagem})
+
+                cliente.enviaMensagem(finalMessage)
             else:
                 raise Exception("ERRO: Primeiro use o comando de chat para iniciar uma conversa!")
 
@@ -224,10 +230,11 @@ def atende_stdin():
     while True:
         getList()
         usuario = startChat()
-        print("Mande as suas mensagens: \n")
         while True:
-            close = sendMessage(usuario)
-            if close: break
+            showMessages(usuario)
+            code = sendMessage(usuario)
+            if code == 1: break
+            elif code == 2: continue
 
 def clearTerminal():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -254,15 +261,20 @@ def startChat():
     return mensagem
 
 def sendMessage(usuario):
-    message = input()
-    if message == ":q": return True
-    showMessages(usuario)
+    message = input(f"{Estrutura.username}: ")
+    if message == ":q": return 1
+    if message == ":r": return 2
     comando = f"/message {usuario} {message}"
     handleUserInput(comando)
     return False
 
 def showMessages(usuario):
-    if not usuario in Estrutura.messages: Estrutura.messages[usuario] = []
-    messages = Estrutura.messages[usuario]
-    for message in messages:
-        print(f"{usuario}:\t {message}")
+    clearTerminal()
+    print("\u001b[31mDigite :q para sair da conversa\u001b[0m")
+    print("\u001b[32mDigite :r para refrescar a conversa\u001b[0m")
+
+    key = (min(usuario, Estrutura.username), max(usuario, Estrutura.username))
+    if key not in Estrutura.messages: Estrutura.messages[key] = []
+    messages = Estrutura.messages[key]
+    for username, message in messages:
+        print(f"{username}: {message}")

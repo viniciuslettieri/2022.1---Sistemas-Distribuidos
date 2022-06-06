@@ -1,6 +1,7 @@
 import string
 import threading
 import socket
+import json
 
 import Estrutura
 from Utils import constroi_mensagem, reconstroi_mensagem, printLog
@@ -18,10 +19,16 @@ class ModuloServidor:
 
         while True:
             printLog("[Log: reconstruindo mensagem]")
-            mensagem = reconstroi_mensagem(self.sock)
-            if not mensagem: break
+            mensagem_json_string = reconstroi_mensagem(self.sock)
+            if not mensagem_json_string: break
             
-            # To Do: Guardar o histórico de mensagens daquele usuário
+            mensagem_json = json.loads(mensagem_json_string)
+            username = mensagem_json["username"]
+            mensagem = mensagem_json["mensagem"]
+            
+            key = (min(username, Estrutura.username), max(username, Estrutura.username))
+            if (key) not in Estrutura.messages: Estrutura.messages[key] = []
+            Estrutura.messages[key] += [(username, mensagem)]
 
         printLog(f"[Log: O usuario { self.sock } encerrou a conexão]")
         self.sock.close()
