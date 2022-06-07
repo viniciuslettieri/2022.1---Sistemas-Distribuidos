@@ -2,10 +2,11 @@ import string
 import threading
 import json
 import os
-
 import Estrutura
 from Utils import constroi_mensagem, reconstroi_mensagem, printLog
 from ModuloCliente import ModuloCliente
+
+
 
 # Guarantees that the user can only use the commands allowed in their current log status
 def checkLoginStatus(operation):
@@ -72,15 +73,15 @@ def printListaClientes():
         dados = Estrutura.lista_usuarios[usuario]
 
         key = (min(usuario, Estrutura.username), max(usuario, Estrutura.username))
+        Estrutura.mutexMessages.acquire()
         if key not in Estrutura.newMessages: Estrutura.newMessages[key] = 0
         newMessages = Estrutura.newMessages[key]
-
+        Estrutura.mutexMessages.release()
         print(f"{usuario}: ({dados['Endereco']}, {dados['Porta']})", end="")
         if newMessages: print(f" \u001b[33m{newMessages} mensagens novas \u001b[0m")
         else: print()
     
     print("\nDigite o usuario que deseja conversar com: ")
-
 # Handle responses from get_lista type requests
 def handleGetListaResponse(response):
     printLog(f"handleGetListaResponse")
@@ -170,8 +171,9 @@ def handleChatRequest(userInput):
         if operation == "chat":
             parsed_username = secoes[1]
             printLog(f"chat com {parsed_username}")
-
+            
             if parsed_username in Estrutura.clientes.keys():
+    
                 print(f"Você já iniciou um chat com '{parsed_username}'")
             elif parsed_username == Estrutura.username:
                 print("Não é possível iniciar um chat com o seu próprio usuário, tente uma pessoa diferente!")
@@ -180,28 +182,33 @@ def handleChatRequest(userInput):
                 PORT = Estrutura.lista_usuarios[parsed_username]["Porta"]
                 printLog(f"chat created {HOST} {PORT}")
                 novo_cliente = ModuloCliente(HOST, PORT)
+                
                 Estrutura.clientes[parsed_username] = novo_cliente
+                
             else:
                 print("Não foi possível encontrar o usuário.")
                 print("Tente usar o comando '/get_lista' para recuperar os usuários ativos.")
-
+            
         elif operation == "message":
             parsed_username = secoes[1]
             mensagem = " ".join(secoes[2:])
 
             printLog(f"message para {parsed_username}")
-
+            
             if parsed_username in Estrutura.clientes.keys():
                 cliente = Estrutura.clientes[parsed_username]
                 
                 key = (min(parsed_username, Estrutura.username), max(parsed_username, Estrutura.username))
+                Estrutura.mutexMessages.acquire()
                 if key not in Estrutura.messages: Estrutura.messages[key] = []
                 Estrutura.messages[key] += [(Estrutura.username, mensagem)]
+                Estrutura.mutexMessages.release()
                 finalMessage = json.dumps({"username": Estrutura.username, "mensagem": mensagem})
 
                 cliente.enviaMensagem(finalMessage)
             else:
                 raise Exception("ERRO: Primeiro use o comando de chat para iniciar uma conversa!")
+            
 
     except Exception as error:
         print(error)
@@ -291,13 +298,15 @@ def showMessages(usuario):
     print("\u001b[32mDigite :r para refrescar a conversa\u001b[0m")
 
     key = (min(usuario, Estrutura.username), max(usuario, Estrutura.username))
+    Estrutura.mutexMessages.acquire()
     if key not in Estrutura.messages: Estrutura.messages[key] = []
 
     messages = Estrutura.messages[key]
     for username, message in messages:
         print(f"{username}: {message}")
-
+    
     if key not in Estrutura.newMessages: Estrutura.newMessages[key] = 0
     Estrutura.newMessages[key] = 0
+    Estrutura.mutexMessages.release()
 
     print(f"{Estrutura.username}: ", end='', flush=True)

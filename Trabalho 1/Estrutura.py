@@ -1,8 +1,10 @@
-
+import threading
 # Esse arquivo guarda todas as estruturas do simulador
 
 HOST_SERVIDOR_CENTRAL = 'localhost'
 PORT_SERVIDOR_CENTRAL = 5000
+
+mutexMessages =threading.Lock()
 
 username = None
 userport = None

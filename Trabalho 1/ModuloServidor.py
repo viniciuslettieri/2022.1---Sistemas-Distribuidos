@@ -8,6 +8,9 @@ from Utils import constroi_mensagem, reconstroi_mensagem, printLog
 from Interface import showMessages, printListaClientes
 
 
+
+
+
 class ModuloServidor:
     def __init__(self, sock):
         printLog("Novo ModuloServidor")
@@ -28,12 +31,12 @@ class ModuloServidor:
             mensagem = mensagem_json["mensagem"]
             
             key = (min(username, Estrutura.username), max(username, Estrutura.username))
+            Estrutura.mutexMessages.acquire()
             if key not in Estrutura.messages: Estrutura.messages[key] = []
             Estrutura.messages[key] += [(username, mensagem)]
-
             if key not in Estrutura.newMessages: Estrutura.newMessages[key] = 0
             Estrutura.newMessages[key] += 1
-
+            Estrutura.mutexMessages.release()
             if Estrutura.estadoTela == "chat":
                 showMessages(Estrutura.usuarioChat)
             elif Estrutura.estadoTela == "menu":
