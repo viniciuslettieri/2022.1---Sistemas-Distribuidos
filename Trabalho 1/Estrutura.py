@@ -1,8 +1,8 @@
 
 # Esse arquivo guarda todas as estruturas do simulador
 
-HOST_SERVIDOR_CENTRAL = '10.11.0.13'
-PORT_SERVIDOR_CENTRAL = 10000
+HOST_SERVIDOR_CENTRAL = 'localhost'
+PORT_SERVIDOR_CENTRAL = 5000
 
 username = None
 userport = None
