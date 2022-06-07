@@ -2,9 +2,11 @@ import string
 import threading
 import json
 import os
+import sys
 
 import Estrutura
 from Utils import constroi_mensagem, reconstroi_mensagem, printLog
+import Utils as Utils
 from ModuloCliente import ModuloCliente
 
 # Guarantees that the user can only use the commands allowed in their current log status
@@ -16,6 +18,7 @@ def checkLoginStatus(operation):
     elif not needsLogin and Estrutura.isLogged:
         raise Exception("Voce já fez login. Não é possível fazer novamente!")
 
+# Initializes the Server Coordinator after login
 def handleLoginInitializations():
     from ModuloServidor import ModuloCoordenadorServidores
 
@@ -121,6 +124,8 @@ def handleLogoffResponse(response, userInput):
 
         print("Você foi desconectado com sucesso\n Até a próxima :)")
         Estrutura.isLogged = False
+
+        sys.exit()
     else:
         exceptionMessage = f"Algo de errado aconteceu ao tentar deslogar. Tente novamente."
         raise Exception(exceptionMessage)
@@ -207,10 +212,12 @@ def handleChatRequest(userInput):
         print(error)
 
 def handleDebugCommand():
+    if not Utils.log: return
+
     print("\nActive threads:")
     for thread in threading.enumerate(): 
         if thread.name == "MainThread":
-            print(thread.name)
+            printLog(thread.name)
         else:
             print(thread.name, thread.ident)
     print("\nClientes: ", Estrutura.clientes)
@@ -245,6 +252,9 @@ def atende_stdin():
         Estrutura.usuarioChat = startChat()
         Estrutura.estadoTela = "chat"
 
+        if Estrutura.usuarioChat == None:       # logoff
+            break
+
         while True:
             showMessages(Estrutura.usuarioChat)
             code = sendMessage(Estrutura.usuarioChat)
@@ -252,6 +262,8 @@ def atende_stdin():
             elif code == 2: continue
         
         Estrutura.usuarioChat = None
+    
+    handleDebugCommand()
 
 def clearTerminal():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -268,19 +280,32 @@ def getList():
     comando = f"/get_lista"
     handleUserInput(comando)
 
-def startChat():
-    mensagem = input()
-    comando = f"/chat {mensagem}"
+def sendLogoffCommand():
+    comando = f"/logoff"
     handleUserInput(comando)
-    if mensagem == ":r" or mensagem not in Estrutura.clientes:
-        getList()
-        return startChat()
+
+def startChat():
+    while True:
+        mensagem = input()
+        
+        if mensagem == ":q":
+            printLog("Logoff solicitado.")
+            sendLogoffCommand()
+            return None
+        
+        comando = f"/chat {mensagem}"
+        handleUserInput(comando)
+        if mensagem == ":r" or mensagem not in Estrutura.clientes:
+            getList()
+        else:    
+            break
+
     return mensagem
 
 def sendMessage(usuario):
     message = input()
     if message == ":q": return 1
-    if message == ":r": return 2
+    elif message == ":r": return 2
     comando = f"/message {usuario} {message}"
     handleUserInput(comando)
     return False
