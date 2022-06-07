@@ -6,15 +6,18 @@ def constroi_mensagem(string_msg):
     return msg
 
 def reconstroi_mensagem(socket):
-    msg = socket.recv(1024)
+    msg = socket.recv(2)
     length = int.from_bytes(msg[:2], 'big')
-    
-    full_msg = msg[2:]
-    length -= 1024
-    while length > 0:
-        msg = socket.recv(1024)
-        length -= 1024
-        full_msg += msg
-    
+    full_msg = socket.recv(length)
     return full_msg.decode("utf-8")
-    
+
+log = False
+
+def activateLog():
+    global log
+    log = True
+
+def printLog(message, *args):
+    global log
+    if log: 
+        print(f"[Log: ${message}]", *args)
