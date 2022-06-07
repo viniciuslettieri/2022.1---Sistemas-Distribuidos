@@ -17,10 +17,9 @@ class ModuloServidor:
         self.sock = sock
 
     def atende_comunicacao(self, data):
-        """ Realiza a comunicação com o cliente, atendendo a requisicao """
+        """ Realiza a comunicação com o cliente, recebendo as mensagens """
 
         (address, port) = data
-
         while True:
             printLog("reconstruindo mensagem")
             mensagem_json_string = reconstroi_mensagem(self.sock)
@@ -42,13 +41,14 @@ class ModuloServidor:
             elif Estrutura.estadoTela == "menu":
                 printListaClientes()
 
-
         printLog(f"O usuario { self.sock } encerrou a conexão")
         self.sock.close()
 
+        # Se remove da lista do Coordenador
         Estrutura.coordenadorServidores.removeServidor(self)
     
     def encerra(self):
+        """ Encerra o socket atual """
         self.sock.close()
         printLog(f"Logoff ModuloServidor com sucesso")
 
@@ -79,7 +79,8 @@ class ModuloCoordenadorServidores:
         return client_sock, client_addr
 
     def trata_novos_servidores(self):
-        printLog("trata novos servidores")
+        """ Aguarda a conexao de um novo cliente do usuario para iniciar conversa """
+        printLog("Trata novos servidores")
         while True:
             printLog("Aguardando nova conexao")
             client_sock, client_addr = self.aceita_conexao()
@@ -92,6 +93,7 @@ class ModuloCoordenadorServidores:
         printLog("Coordenador Finalizou Tratamento de Novos Servidores")
     
     def encerra(self):
+        """ Encerra seu socket e todos os servidores em questao """
         printLog(f"Logoff ModuloCoordenadorServidores")
         self.sock.close()
         for servidor in self.servidores:
@@ -100,5 +102,6 @@ class ModuloCoordenadorServidores:
         printLog(f"Logoff ModuloCoordenadorServidores com Sucesso")
 
     def removeServidor(self, servidor):
+        """ Remove um servidor da sua lista """
         self.servidores.remove(servidor)
         printLog(f"removeServidor - Lista {self.servidores}")
