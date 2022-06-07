@@ -14,7 +14,10 @@ newMessages = {}            # Guarda a quantidade de mensagens novas por par de 
 clienteServidorCentral = None
 coordenadorServidores = None
 
-isLogged = False      # Logged state of the user
+isLogged = False            # Estado de Log dos Prints
+
+estadoTela = "login"        # login, menu, chat
+usuarioChat = None          # usuario em chat no momento
 
 # Possible user commands
 serverCommands = [

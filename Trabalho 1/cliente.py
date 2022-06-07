@@ -6,7 +6,7 @@ import Utils
 
 
 HOST = 'localhost'      # ip/server to send messages. If it's in another computer, input the ip
-DOOR = 5000             # Door used by both client/server
+PORT = 5000             # Port used by both client/server
 
 MESSAGE_SIZE = 256      # We will use one unsigned byte to represent size of message. 1 byte for length of message, and 2^8 - 1 for message.
 conections = []         # array with the current open connectios
@@ -15,15 +15,15 @@ serverCommands = {"get_lista":True,"login":True,"Logoff":True}      # possible a
 isLogged = False        # Log state of the user
 
 
-def createConnection(host, door):
+def createConnection(host, port):
     # create socket (instantiation)
     activeSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     # Connect with client server side
-    activeSock.connect((host, door))
+    activeSock.connect((host, port))
     return activeSock
 
-socketServidor = createConnection(HOST,DOOR) #initialize a connection with the central server   
+socketServidor = createConnection(HOST,PORT) #initialize a connection with the central server   
 
 #garantees that the user can only use the commands alowed in their current log status
 def checkLoginStatus(operation):

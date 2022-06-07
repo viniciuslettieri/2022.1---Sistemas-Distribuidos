@@ -5,11 +5,12 @@ import json
 
 import Estrutura
 from Utils import constroi_mensagem, reconstroi_mensagem, printLog
+from Interface import showMessages, printListaClientes
 
 
 class ModuloServidor:
     def __init__(self, sock):
-        printLog("[Log: Novo ModuloServidor]")
+        printLog("Novo ModuloServidor")
         self.sock = sock
 
     def atende_comunicacao(self, data):
@@ -18,7 +19,7 @@ class ModuloServidor:
         (address, port) = data
 
         while True:
-            printLog("[Log: reconstruindo mensagem]")
+            printLog("reconstruindo mensagem")
             mensagem_json_string = reconstroi_mensagem(self.sock)
             if not mensagem_json_string: break
             
@@ -33,19 +34,24 @@ class ModuloServidor:
             if key not in Estrutura.newMessages: Estrutura.newMessages[key] = 0
             Estrutura.newMessages[key] += 1
 
+            if Estrutura.estadoTela == "chat":
+                showMessages(Estrutura.usuarioChat)
+            elif Estrutura.estadoTela == "menu":
+                printListaClientes()
 
-        printLog(f"[Log: O usuario { self.sock } encerrou a conexão]")
+
+        printLog(f"O usuario { self.sock } encerrou a conexão")
         self.sock.close()
 
         Estrutura.coordenadorServidores.removeServidor(self)
     
     def encerra(self):
         self.sock.close()
-        printLog(f"[Log: Logoff ModuloServidor com sucesso]")
+        printLog(f"Logoff ModuloServidor com sucesso")
 
 class ModuloCoordenadorServidores:
     def __init__(self, HOST, PORT):
-        printLog("[Log: Novo ModuloCoordenadorServidores]", HOST, PORT)
+        printLog("Novo ModuloCoordenadorServidores", HOST, PORT)
         self.HOST = HOST
         self.PORT = int(PORT)
         self.inicializa()
@@ -60,36 +66,36 @@ class ModuloCoordenadorServidores:
             sock.listen(5) 
             # sock.setblocking(False)
 
-            printLog(f"[Log: O servidor foi inicializado na porta { self.PORT }.")
+            printLog(f"O servidor foi inicializado na porta { self.PORT }.")
             self.sock = sock
 
     def aceita_conexao(self):
         """ Realiza a conexão com o cliente e devolve o novo socket direto """
         client_sock, client_addr = self.sock.accept()
-        printLog(f"[Log: O servidor aceitou a conexão de { client_addr }]")
+        printLog(f"O servidor aceitou a conexão de { client_addr }")
         return client_sock, client_addr
 
     def trata_novos_servidores(self):
-        printLog("[Log: trata novos servidores]")
+        printLog("trata novos servidores")
         while True:
-            printLog("[Log: Aguardando nova conexao]")
+            printLog("Aguardando nova conexao")
             client_sock, client_addr = self.aceita_conexao()
-            printLog("[Log: Conexao aceita]")
+            printLog("Conexao aceita")
             novo_servidor = ModuloServidor(client_sock)
             nova_thread_servidor = threading.Thread(target=novo_servidor.atende_comunicacao, args=(client_addr,))   
             nova_thread_servidor.start()
-            printLog(f"[Log: Nova Thread {nova_thread_servidor.name} {nova_thread_servidor.ident}]")
+            printLog(f"Nova Thread {nova_thread_servidor.name} {nova_thread_servidor.ident}")
             self.servidores.append(novo_servidor) 
-        printLog("[Log: Coordenador Finalizou Tratamento de Novos Servidores]")
+        printLog("Coordenador Finalizou Tratamento de Novos Servidores")
     
     def encerra(self):
-        printLog(f"[Log: Logoff ModuloCoordenadorServidores]")
+        printLog(f"Logoff ModuloCoordenadorServidores")
         self.sock.close()
         for servidor in self.servidores:
             servidor.encerra()
         self.servidores = []
-        printLog(f"[Log: Logoff ModuloCoordenadorServidores com Sucesso]")
+        printLog(f"Logoff ModuloCoordenadorServidores com Sucesso")
 
     def removeServidor(self, servidor):
         self.servidores.remove(servidor)
-        printLog(f"[Log: removeServidor - Lista {self.servidores}]")
+        printLog(f"removeServidor - Lista {self.servidores}")

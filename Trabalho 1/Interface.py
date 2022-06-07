@@ -6,7 +6,6 @@ import os
 import Estrutura
 from Utils import constroi_mensagem, reconstroi_mensagem, printLog
 from ModuloCliente import ModuloCliente
-from ModuloServidor import ModuloServidor, ModuloCoordenadorServidores
 
 # Guarantees that the user can only use the commands allowed in their current log status
 def checkLoginStatus(operation):
@@ -18,6 +17,8 @@ def checkLoginStatus(operation):
         raise Exception("Voce já fez login. Não é possível fazer novamente!")
 
 def handleLoginInitializations():
+    from ModuloServidor import ModuloCoordenadorServidores
+
     printLog(f"handleLoginInitializations")
     try:
         Estrutura.coordenadorServidores = ModuloCoordenadorServidores('', Estrutura.userport)
@@ -46,7 +47,7 @@ def parseUserCommand(userInput):
         if len(secoes) == 3:
             parsed_username = secoes[1]
             parsed_port = secoes[2]
-            parsedCommand = '{"operacao": "login", "username": "' + parsed_username + '" ,"porta": "' + parsed_port + '"}'
+            parsedCommand = '{"operacao": "login", "username": "' + parsed_username + '" ,"porta": ' + parsed_port + '}'
             Estrutura.userport = parsed_port
         else:
             raise Exception("O comando 'login' requer 2 parâmetros: [username] [porta]")
@@ -65,6 +66,9 @@ def printListaClientes():
     print("Escolha um usuário para começar uma conversa: ")
     print("\nClientes Ativos: \n")
     for usuario in Estrutura.lista_usuarios:
+        if usuario == Estrutura.username:       # same as current user
+            continue
+
         dados = Estrutura.lista_usuarios[usuario]
 
         key = (min(usuario, Estrutura.username), max(usuario, Estrutura.username))
@@ -74,13 +78,14 @@ def printListaClientes():
         print(f"{usuario}: ({dados['Endereco']}, {dados['Porta']})", end="")
         if newMessages: print(f" \u001b[33m{newMessages} mensagens novas \u001b[0m")
         else: print()
-    print()
+    
+    print("\nDigite o usuario que deseja conversar com: ")
 
 # Handle responses from get_lista type requests
 def handleGetListaResponse(response):
     printLog(f"handleGetListaResponse")
     status = response["status"]
-    if status == "200":
+    if status == 200:
         Estrutura.lista_usuarios = response["clientes"]
         printListaClientes()
     else:
@@ -93,7 +98,7 @@ def handleLoginResponse(response, userInput):
     status = response["status"]
     parsed_username = userInput.split(" ")[1]
 
-    if status == "200":
+    if status == 200:
         print("Bem vindo " + parsed_username + "!")
         Estrutura.isLogged = True
         Estrutura.username = parsed_username
@@ -107,7 +112,7 @@ def handleLogoffResponse(response, userInput):
 
     status = response["status"]
 
-    if status =="200":
+    if status == 200:
         Estrutura.coordenadorServidores.encerra()
 
         for username in Estrutura.clientes:
@@ -154,7 +159,7 @@ def handleServerRequest(userInput):
 
 # Central function when dealing with user chatting Commands
 def handleChatRequest(userInput):
-    printLog(f"[Log: handleChatRequest]")
+    printLog(f"handleChatRequest")
     
     try:
         secoes = userInput.split(" ")
@@ -164,7 +169,7 @@ def handleChatRequest(userInput):
 
         if operation == "chat":
             parsed_username = secoes[1]
-            printLog(f"[Log: chat com {parsed_username}]")
+            printLog(f"chat com {parsed_username}")
 
             if parsed_username in Estrutura.clientes.keys():
                 print(f"Você já iniciou um chat com '{parsed_username}'")
@@ -173,7 +178,7 @@ def handleChatRequest(userInput):
             elif parsed_username in Estrutura.lista_usuarios:
                 HOST = Estrutura.lista_usuarios[parsed_username]["Endereco"]
                 PORT = Estrutura.lista_usuarios[parsed_username]["Porta"]
-                printLog(f"[Log: chat created {HOST} {PORT}]")
+                printLog(f"chat created {HOST} {PORT}")
                 novo_cliente = ModuloCliente(HOST, PORT)
                 Estrutura.clientes[parsed_username] = novo_cliente
             else:
@@ -184,7 +189,7 @@ def handleChatRequest(userInput):
             parsed_username = secoes[1]
             mensagem = " ".join(secoes[2:])
 
-            printLog(f"[Log: message para {parsed_username}]")
+            printLog(f"message para {parsed_username}")
 
             if parsed_username in Estrutura.clientes.keys():
                 cliente = Estrutura.clientes[parsed_username]
@@ -217,7 +222,7 @@ def handleDebugCommand():
 
 # Deals with the different possible inputs passed by the user
 def handleUserInput(userInput):
-    printLog(f"[Log: handleUserInput]")
+    printLog(f"handleUserInput")
     if userInput[0] == '/':
         command = userInput.split(" ")[0][1:]
         if command in Estrutura.serverCommands:
@@ -226,22 +231,27 @@ def handleUserInput(userInput):
             handleChatRequest(userInput[1:])
         elif command == "debug":
             handleDebugCommand()
-    else:
-        printLog(f"nao eh comando")
-        pass # aqui vamos adicionar o envio de mensagem mas por enquanto usa \message
 
 def atende_stdin():
     clearTerminal()
+
     while not Estrutura.isLogged:
         loginInterface()
+    
     while True:
+        Estrutura.estadoTela = "menu"
         getList()
-        usuario = startChat()
+
+        Estrutura.usuarioChat = startChat()
+        Estrutura.estadoTela = "chat"
+
         while True:
-            showMessages(usuario)
-            code = sendMessage(usuario)
+            showMessages(Estrutura.usuarioChat)
+            code = sendMessage(Estrutura.usuarioChat)
             if code == 1: break
             elif code == 2: continue
+        
+        Estrutura.usuarioChat = None
 
 def clearTerminal():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -249,7 +259,7 @@ def clearTerminal():
 def loginInterface():
     print("Para entrar no bate-papo, primeiro precisamos que você se conecte.")
     usuario = input("Usuario: ")
-    porta = input("Porta: ")
+    porta = int(input("Porta: "))
     comando = f"/login {usuario} {porta}"
     handleUserInput(comando)
     print()
@@ -259,7 +269,7 @@ def getList():
     handleUserInput(comando)
 
 def startChat():
-    mensagem = input("Digite o usuario que deseja conversar com: ")
+    mensagem = input()
     comando = f"/chat {mensagem}"
     handleUserInput(comando)
     if mensagem == ":r" or mensagem not in Estrutura.clientes:
@@ -268,7 +278,7 @@ def startChat():
     return mensagem
 
 def sendMessage(usuario):
-    message = input(f"{Estrutura.username}: ")
+    message = input()
     if message == ":q": return 1
     if message == ":r": return 2
     comando = f"/message {usuario} {message}"
@@ -289,3 +299,5 @@ def showMessages(usuario):
 
     if key not in Estrutura.newMessages: Estrutura.newMessages[key] = 0
     Estrutura.newMessages[key] = 0
+
+    print(f"{Estrutura.username}: ", end='', flush=True)
