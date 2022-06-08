@@ -4,7 +4,7 @@ import threading
 HOST_SERVIDOR_CENTRAL = 'localhost'
 PORT_SERVIDOR_CENTRAL = 5000
 
-mutexMessages =threading.Lock()
+mutexMessages = threading.Lock()
 
 username = None
 userport = None

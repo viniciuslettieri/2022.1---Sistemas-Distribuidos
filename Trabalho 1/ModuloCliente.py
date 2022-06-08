@@ -2,6 +2,7 @@ import socket
 
 from Utils import constroi_mensagem, reconstroi_mensagem, printLog
 
+
 class ModuloCliente:
     def __init__(self, HOST, PORT):
         printLog("Novo ModuloCliente", HOST, PORT)

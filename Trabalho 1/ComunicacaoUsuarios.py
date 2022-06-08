@@ -9,6 +9,7 @@ from ModuloServidor import ModuloServidor, ModuloCoordenadorServidores
 from Interface import *
 from Utils import printLog, activateLog, log
 
+
 def main():     
     # cliente para comunicar com o servidor central
     Estrutura.clienteServidorCentral = ModuloCliente(

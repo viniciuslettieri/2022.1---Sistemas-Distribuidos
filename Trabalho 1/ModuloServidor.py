@@ -8,9 +8,6 @@ from Utils import constroi_mensagem, reconstroi_mensagem, printLog
 from Interface import showMessages, printListaClientes
 
 
-
-
-
 class ModuloServidor:
     def __init__(self, sock):
         printLog("Novo ModuloServidor")

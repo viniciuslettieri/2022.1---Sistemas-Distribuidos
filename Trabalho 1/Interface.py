@@ -10,7 +10,6 @@ import Utils as Utils
 from ModuloCliente import ModuloCliente
 
 
-
 # Guarantees that the user can only use the commands allowed in their current log status
 def checkLoginStatus(operation):
     printLog(f"checkLoginStatus")
