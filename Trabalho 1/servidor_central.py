@@ -17,6 +17,8 @@ inputs = [sys.stdin]
 
 connections = {}
 
+mutexConnections = threading.Lock()
+
 
 def createServerConnection():
     # create socket (instantiation)
@@ -102,12 +104,14 @@ def data_acess(json_req, address):
 
 def get_lista(json_req, address):
     command = json_req["operacao"]
+    mutexConnections.acquire()
     json_string = {
         "operacao": command, 
         "status": 200, 
         "clientes": connections, 
         "Usuario": {"Endereco": str(address), "Porta": int(PORT)}
     }
+    mutexConnections.release()
     answer = json.dumps(json_string)
     return answer
 
@@ -115,7 +119,8 @@ def login(json_req, address):
     command = json_req["operacao"]
     username = json_req["username"]
     json_string = {}
-
+    
+    mutexConnections.acquire()
     if not (username in connections):
         userport = int(json_req["porta"])
         connections[username] = {"Endereco": str(address), "Porta": userport}
@@ -124,16 +129,18 @@ def login(json_req, address):
     else:
         json_string = {"operacao": command, "status": 400, "mensagem": "Username em Uso"}
     
+    mutexConnections.release()
     answer = json.dumps(json_string)
     return answer
 
 def logoff(json_req):
     command = json_req["operacao"]
     username = json_req["username"]
-    print(json_req)
+    
+    mutexConnections.acquire()
     del connections[username]
-    print(json_req)
-
+    mutexConnections.release()
+    
     json_string = {"operacao": command, "status": 200, "mensagem": "Logoff com sucesso"}
     answer = json.dumps(json_string)
     return answer
