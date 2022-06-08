@@ -321,7 +321,7 @@ def sendMessage(usuario):
 def showMessages(usuario):
     clearTerminal()
     print("\u001b[31mDigite :q para sair da conversa\u001b[0m")
-    print("\u001b[32mDigite :r para refrescar a conversa\u001b[0m")
+    #print("\u001b[32mDigite :r para refrescar a conversa\u001b[0m")
 
     key = (min(usuario, Estrutura.username), max(usuario, Estrutura.username))
     Estrutura.mutexMessages.acquire()
