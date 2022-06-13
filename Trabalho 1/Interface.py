@@ -26,8 +26,8 @@ def handleLoginInitializations():
     printLog(f"handleLoginInitializations")
     try:
         Estrutura.coordenadorServidores = ModuloCoordenadorServidores('', Estrutura.userport)
-        thread_coordenador = threading.Thread(target=Estrutura.coordenadorServidores.trata_novos_servidores)   
-        thread_coordenador.start()
+        # thread_coordenador = threading.Thread(target=Estrutura.coordenadorServidores.trata_novos_servidores)   
+        # thread_coordenador.start()
         printLog(f"Nova Thread {thread_coordenador.name} {thread_coordenador.ident}")
     except:
         raise Exception("Erro criando o servidor na porta escolhida!")
@@ -221,12 +221,12 @@ def handleChatRequest(userInput):
 def handleDebugCommand():
     if not Utils.log: return
 
-    print("\nActive threads:")
-    for thread in threading.enumerate(): 
-        if thread.name == "MainThread":
-            printLog(thread.name)
-        else:
-            print(thread.name, thread.ident)
+    # print("\nActive threads:")
+    # for thread in threading.enumerate(): 
+    #     if thread.name == "MainThread":
+    #         printLog(thread.name)
+    #     else:
+    #         print(thread.name, thread.ident)
     print("\nClientes: ", Estrutura.clientes)
     print("\nLista Clientes: ", Estrutura.lista_usuarios)
     print("\nEstá logado: ", Estrutura.isLogged)
