@@ -31,16 +31,22 @@ def main():
     if args.log: activateLog()
     # printLog(f"Thread Interface {thread_interface.name} {thread_interface.ident}")
 
+    atende_stdin()
+
     # aguarda inputs
-    r, escrita, excecao = select.select(Estrutura.select_inputs, [], [])
-    for ready in r:
-        if ready == sys.stdin:
-            atende_stdin()
-        elif ready == Estrutura.coordenadorServidores.sock:
-            Estrutura.coordenadorServidores.trata_novos_servidores()
-        else:
-            servidor = Estrutura.socket_servidores[ready]
-            servidor.atende_comunicacao()
+    while True:
+        r, escrita, excecao = select.select(Estrutura.select_inputs, [], [])
+        for ready in r:
+            if ready == sys.stdin:
+                atende_stdin()
+                print("[1]")
+            elif ready == Estrutura.coordenadorServidores.sock:
+                Estrutura.coordenadorServidores.trata_novos_servidores()
+                print("[2]")
+            else:
+                servidor = Estrutura.socket_servidores[ready]
+                servidor.atende_comunicacao()
+                print("[3]")
 
     thread_interface.join()
 

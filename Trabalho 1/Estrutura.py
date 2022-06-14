@@ -7,7 +7,7 @@ PORT_SERVIDOR_CENTRAL = 5000
 
 mutexMessages = threading.Lock()
 select_inputs = []
-socket_clientes = {}        # Chave: Socket e Valor: Objeto Cliente
+socket_servidores = {}        # Chave: Socket e Valor: Objeto Cliente
 
 username = None
 userport = None

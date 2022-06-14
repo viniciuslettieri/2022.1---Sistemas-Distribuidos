@@ -28,7 +28,7 @@ def handleLoginInitializations():
         Estrutura.coordenadorServidores = ModuloCoordenadorServidores('', Estrutura.userport)
         # thread_coordenador = threading.Thread(target=Estrutura.coordenadorServidores.trata_novos_servidores)   
         # thread_coordenador.start()
-        printLog(f"Nova Thread {thread_coordenador.name} {thread_coordenador.ident}")
+        # printLog(f"Nova Thread {thread_coordenador.name} {thread_coordenador.ident}")
     except:
         raise Exception("Erro criando o servidor na porta escolhida!")
 
@@ -252,25 +252,26 @@ def atende_stdin():
     while not Estrutura.isLogged:
         loginInterface()
     
-    while True:
-        Estrutura.estadoTela = "menu"
-        getList()
+    # while True:
+    Estrutura.estadoTela = "menu"
+    getList()
 
-        Estrutura.usuarioChat = startChat()
-        Estrutura.estadoTela = "chat"
+    Estrutura.usuarioChat = startChat()
+    Estrutura.estadoTela = "chat"
 
-        if Estrutura.usuarioChat == None:       # logoff
-            break
+    if Estrutura.usuarioChat == None:       # logoff
+        # break
+        sys.exit()
 
-        while True:
-            showMessages(Estrutura.usuarioChat)
-            code = sendMessage(Estrutura.usuarioChat)
-            if code == 1: break
-            elif code == 2: continue
-        
-        Estrutura.usuarioChat = None
-    
-    handleDebugCommand()
+    # while True:
+    showMessages(Estrutura.usuarioChat)
+    code = sendMessage(Estrutura.usuarioChat)
+    # if code == 1: break
+    # elif code == 2: continue
+
+    if code == 1: Estrutura.usuarioChat = None   
+
+    # handleDebugCommand()
 
 def clearTerminal():
     os.system('cls' if os.name == 'nt' else 'clear')
