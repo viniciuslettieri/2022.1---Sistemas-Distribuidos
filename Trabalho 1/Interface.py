@@ -126,7 +126,7 @@ def handleLogoffResponse(response, userInput):
         print("Você foi desconectado com sucesso\n Até a próxima :)")
         Estrutura.isLogged = False
 
-        sys.exit()
+        os._exit(0)
     else:
         exceptionMessage = f"Algo de errado aconteceu ao tentar deslogar. Tente novamente."
         raise Exception(exceptionMessage)
