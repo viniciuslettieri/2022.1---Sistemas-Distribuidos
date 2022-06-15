@@ -13,7 +13,7 @@ while True:
 
     if filename == "exit":
         break
-    
+
     sock.send(filename.encode("ascii"))
     msg = sock.recv(1024)
     print(str(msg, encoding='utf-8'))
