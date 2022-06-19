@@ -2,7 +2,6 @@ from random import choice
 import random
 
 def generate_pairs(lista):
-    random.seed(42)
     seen = set()
 
     # Primeiro geramos com certeza uma conexao para cada
