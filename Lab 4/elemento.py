@@ -20,7 +20,7 @@ class Elemento(rpyc.Service):
 
     def on_disconnect(self, conx):
         global identificador
-        print(f"Conexao encerrada. [{identificador}]")
+        # print(f"Conexao encerrada. [{identificador}]")
 
     def exposed_return_id(self):
         global identificador
@@ -93,6 +93,7 @@ def inicializa_servidor(port):
 
 def inicializa_servidores(quantidade_servidores):
     portas = []
+    processos = []
     while quantidade_servidores > 0:
         porta = randint(1000, 9999)
         if porta in portas: 
@@ -102,8 +103,9 @@ def inicializa_servidores(quantidade_servidores):
             t = multiprocessing.Process(target=inicializa_servidor, args=(porta,))
             t.start()
             portas.append(porta)
+            processos.append(t)
             quantidade_servidores -= 1
         except:
             pass
 
-    return portas
+    return portas, processos

@@ -4,7 +4,7 @@ from elemento import inicializa_servidores
 
 # Gera os servidores para cada elemento na devida porta
 quantidade_servidores = 10
-portas = inicializa_servidores(quantidade_servidores)
+portas, processos = inicializa_servidores(quantidade_servidores)
 
 # Obtenção dos elementos
 print("Conectando com os servidores:")
@@ -49,3 +49,6 @@ while porta_input:
 
 for k in elementos:
     elementos[k].close()
+
+for processo in processos:
+    processo.terminate()
