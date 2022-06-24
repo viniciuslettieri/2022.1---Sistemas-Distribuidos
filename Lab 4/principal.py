@@ -30,7 +30,7 @@ for k in elementos:
     print("Vizinhos de", k, "com identificador", elementos[k].root.return_id(), "=>", elementos[k].root.list_neighbors())
 
 # Processo de lideranca
-porta_input = input(f"\nSelecione uma das portas: {portas} - Enter para Finalizar\n> ")
+porta_input = input(f"\nSelecione uma das portas para iniciar a eleicao: {portas} - Enter para Finalizar\n> ")
 while porta_input:
     porta_input = int(porta_input)
 
@@ -39,7 +39,7 @@ while porta_input:
     else:
         elementos[porta_input].root.start_election()
     
-    porta_input = input(f"\nSelecione uma das portas: {portas} - Enter para Finalizar\n> ")
+    porta_input = input(f"\nSelecione uma das portas para iniciar a eleicao: {portas} - Enter para Finalizar\n> ")
 
 
 for k in elementos:

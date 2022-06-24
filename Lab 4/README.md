@@ -1,6 +1,6 @@
 # Laboratório 4
 
-Nesse laboratório, implementamos o algoritmo de eleição de líder utilizando RPC.
+Nesse laboratório, implementamos o algoritmo de eleição de líder utilizando RPC e Probe-Echo.
 
 Para isso, o código `principal.py` se torna responsável por gerar os servidores, através dos métodos e classes de `elemento.py`.
 
