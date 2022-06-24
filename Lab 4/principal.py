@@ -30,21 +30,16 @@ for k in elementos:
     print("Vizinhos de", k, "com identificador", elementos[k].root.return_id(), "=>", elementos[k].root.list_neighbors())
 
 # Processo de lideranca
-porta_input = input(f"\nSelecione uma das portas: {portas}\n> ")
+porta_input = input(f"\nSelecione uma das portas: {portas} - Enter para Finalizar\n> ")
 while porta_input:
     porta_input = int(porta_input)
+
     if porta_input not in portas: 
-        porta_input = input(f"\nA porta não está na lista. \nSelecione uma das portas: {portas}\n> ")
-        continue
-
-    # Envia probe
-    print("Retorno do Probe:", elementos[porta_input].root.probe())
-
-    # Verificando os lideres
-    for k in elementos:
-        print("Lider de", k, ":", elementos[k].root.return_id_lider())
+        print("\nA porta não está na lista.")
+    else:
+        elementos[porta_input].root.start_election()
     
-    porta_input = input(f"\nSelecione uma das portas: {portas}\n> ")
+    porta_input = input(f"\nSelecione uma das portas: {portas} - Enter para Finalizar\n> ")
 
 
 for k in elementos:
