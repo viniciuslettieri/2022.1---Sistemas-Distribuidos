@@ -1,13 +1,20 @@
 import json
 import hashlib
-import glob
 import os
+import random
 
-for i in range(100000000000000000):
+quantidade_zeros = 5
+print(f"Iniciando tentativa para {quantidade_zeros} digitos zeros iniciais.")
+
+json_block = ""
+hash_result = ""
+while hash_result[:quantidade_zeros] != "0" * quantidade_zeros:
+    nonce = random.randint(0, 1000000000000000)
+
     test_block = {
         "header": {
             "previous_hash": "1",
-            "nonce": i,
+            "nonce": nonce,
             "hash_merkle": "3", 
             "timestamp": "4"
         },
@@ -18,8 +25,5 @@ for i in range(100000000000000000):
     json_block = json.dumps(test_block)
     hash_result = hashlib.sha256(json_block.encode("utf-8")).hexdigest()
 
-    quantidade_zeros = 5
-    if hash_result[:quantidade_zeros] == "0"*quantidade_zeros:
-        print("\nBloco em JSON:", json_block.encode("utf-8"))
-        print("\nHash do Bloco:", hash_result)
-        break
+print("\nBloco em JSON:", json_block.encode("utf-8"))
+print("\nHash do Bloco:", hash_result)
