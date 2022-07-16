@@ -169,6 +169,12 @@ class Blockchain:
             block.print_data()
             previous_hash = block.get_previous_hash()
             block = self.blocks.get(previous_hash)
+    
+    def print_blocks(self):
+        """ Imprime todos os blocos no set de blocos """
+
+        for block in self.blocks.values():
+            block.print_data()
 
     def validate_new_block(self, new_block:Block):
         """ Valida se novo bloco é válido para a blockchain.

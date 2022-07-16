@@ -114,6 +114,12 @@ def mostrar_blockchain():
     bcolors.print_color("\nBlockchain Atual:\n", "HEADER")
     state["blockchain"].print_blockchain()
 
+def mostrar_blocos():
+    global state
+
+    bcolors.print_color("\nBlocos Atuais neste Node:\n", "HEADER")
+    state["blockchain"].print_blocks()
+
 def mostra_opcoes():
     global state
     has_blockchain = state["blockchain"]
@@ -121,11 +127,12 @@ def mostra_opcoes():
     print("\n", "-" * 50)
     bcolors.print_color("\n- Opções Disponíveis -\n", "HEADER")
     print("1. Iniciar Blockchain com Genesis")
-    print("2. Conectar com Blockchain de outro Node")
+    print("2. Entrar em Blockchain de outro Node")
     print("3. Listar Nodes Vizinhos")
     if has_blockchain: print("4. Mostrar Blockchain Atual")
-    if has_blockchain: print("5. Criar Transação")
-    if has_blockchain: print("6. Criar fork malicioso")
+    if has_blockchain: print("5. Mostrar Todos os Blocos")
+    if has_blockchain: print("6. Criar Transação")
+    if has_blockchain: print("7. Criar fork malicioso")
     print("F. Finalizar o Programa. \n")
 
 def criar_transacao():
@@ -160,8 +167,10 @@ def menu():
         elif opcao == "4" and  has_blockchain:
             mostrar_blockchain()
         elif opcao == "5" and  has_blockchain:
+            mostrar_blocos()
+        elif opcao == "6" and  has_blockchain:
             criar_transacao()
-        elif opcao == "6" and has_blockchain:
+        elif opcao == "7" and has_blockchain:
             iniciar_fork_malicioso()
         elif opcao.upper() == "F":
             server = rpyc.connect('localhost', state["porta_server"], config={"allow_public_attrs": True})
