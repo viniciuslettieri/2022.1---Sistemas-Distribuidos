@@ -1,17 +1,7 @@
 import rpyc
 from rpyc.utils.server import ThreadedServer
-from Blockchain import Blockchain
-
-# Todos os Estados Globais
-# neighbors - lista de tuplas (ip, porta)
-
-state = {
-    "neighbors": set(),
-    "porta_server": None,
-    "endereco_server": None,
-    "blockchain": Blockchain()
-}
-
+from Blockchain import Block, Blockchain
+from State import state
 
 class Node(rpyc.Service):
     global state
@@ -32,8 +22,9 @@ class Node(rpyc.Service):
 
     def exposed_return_blockchain(self):
         return state["blockchain"].return_blocks()
-        
-
+    
+    def exposed_add_new_block(self, block: Block):
+        state["blockchain"].add_block(block)
     
 def inicializa_servidor(port):
     global state

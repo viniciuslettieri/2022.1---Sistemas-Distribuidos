@@ -5,6 +5,9 @@ import os
 import sys
 import random
 
+import rpyc
+from State import state
+
 # Determina a quantidade de zeros que o hash precisa ter no início
 DESAFIO_ZEROS = 4
 
@@ -94,6 +97,14 @@ def generate_proof_of_work(index:int, timestamp:datetime, previous_hash: str, tr
 
     return new_block
 
+def send_new_block_to_neighbors(block):
+        global state
+
+        neighbors = state["neighbors"]
+        for neighbor in neighbors:
+            server = rpyc.connect(neighbor[0], neighbor[1], config={"allow_public_attrs": True})
+            server.root.add_new_block(block)
+            server.close()
 
 class Blockchain:
     def __init__(self, added_blocks={}):
@@ -202,15 +213,19 @@ class Blockchain:
 
         self.transactions_pool.clear()
 
+        send_new_block_to_neighbors(new_block)
+
     def add_transaction(self, transaction:str):
         """ Adiciona uma nova transacao na pool """
 
         self.transactions_pool.append(transaction)
-        if len(self.transactions_pool) == 5:
+        if len(self.transactions_pool) == 2:
             self.mine()
 
     def add_block(self, new_block:Block):
         """ Adiciona um novo bloco na cadeia atual """
+
+        new_block = Block.replicate_block(new_block)
 
         validated = self.validate_new_block(new_block)
         if validated:

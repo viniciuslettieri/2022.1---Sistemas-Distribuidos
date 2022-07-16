@@ -32,7 +32,7 @@ def conectar_com_novos(novos_nodes: set):
     novos_vizinhos = set()
     for novo_node in novos_nodes:
         try:
-            server = rpyc.connect(novo_node[0], novo_node[1])
+            server = rpyc.connect(novo_node[0], novo_node[1], config={"allow_public_attrs": True})
 
             server.root.notify_new(state["endereco_server"], state["porta_server"])
 
@@ -56,8 +56,9 @@ def conectar_com_novos(novos_nodes: set):
         conectar_com_novos(novos_vizinhos)
 
 def iniciar_blockchain():
-
     global state
+
+    state["blockchain"] = Blockchain()
 
     bcolors.print_color("\nIniciando Blockchain com o Bloco Genesis:\n", "HEADER")
     state["blockchain"].start_blockchain()
@@ -69,8 +70,9 @@ def extrair_blockchain(node_ip, node_port):
     global state
 
     try:
-        server = rpyc.connect(node_ip, node_port)
-        state["blockchain"] = Blockchain(server.root.return_blockchain())
+        server = rpyc.connect(node_ip, node_port, config={"allow_public_attrs": True})
+        new_blockchain = Blockchain(server.root.return_blockchain())
+        state["blockchain"] = new_blockchain
         server.close()
 
         bcolors.print_color(f"\nBlockchain com { len(state['blockchain'].blocks) } blocos obtida com sucesso.\n", "OKGREEN")
@@ -112,39 +114,44 @@ def mostrar_blockchain():
     state["blockchain"].print_blockchain()
 
 def mostra_opcoes():
+    global state
+    has_blockchain = state["blockchain"]
+    
     print("\n", "-" * 50)
     bcolors.print_color("\n- Opções Disponíveis -\n", "HEADER")
     print("1. Iniciar Blockchain com Genesis")
     print("2. Conectar com Blockchain de outro Node")
     print("3. Listar Nodes Vizinhos")
-    print("4. Mostrar Blockchain Atual")
-    print("5. Criar Transação")
+    if has_blockchain: print("4. Mostrar Blockchain Atual")
+    if has_blockchain: print("5. Criar Transação")
     print("F. Finalizar o Programa. \n")
 
-def criar_transacao():
+def create_transaction():
     global state
     transacao = input("Escreva qual será sua transação: ")
     state["blockchain"].add_transaction(str(transacao))
 
 def menu():
     global state
-    
+
     while True:
+        has_blockchain = state["blockchain"]
         mostra_opcoes()
 
         opcao = input("Selecione a Opção: ")
+        os.system('cls' if os.name == 'nt' else 'clear')
         if opcao == "1":
             iniciar_blockchain()
         elif opcao == "2":
             conectar_com_blockchain()
         elif opcao == "3":
             listar_nodes_vizinhos()
-        elif opcao == "4":
+        elif opcao == "4" and  has_blockchain:
             mostrar_blockchain()
-        elif opcao == "5":
-            criar_transacao()    
+        elif opcao == "5" and  has_blockchain:
+            create_transaction()    
         elif opcao.upper() == "F":
-            server = rpyc.connect('localhost', state["porta_server"])
+            server = rpyc.connect('localhost', state["porta_server"], config={"allow_public_attrs": True})
             server.close()
             print("\nPrograma Finalizado!\n")
             os._exit(0)
@@ -162,6 +169,6 @@ if __name__ == "__main__":
         node.start()
 
         menu()
-    except Exception as err:
+    except:
         bcolors.print_color("\nErro: Erro interno.", "FAIL")
-        bcolors.print_color(err, "FAIL")
+     
