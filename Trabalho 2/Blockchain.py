@@ -6,7 +6,7 @@ import sys
 import random
 
 # Determina a quantidade de zeros que o hash precisa ter no início
-DESAFIO_ZEROS = 5
+DESAFIO_ZEROS = 4
 
 class Block:
     def __init__(self, index:int, timestamp:datetime, previous_hash: str, transactions:list, nonce: int):
@@ -67,6 +67,8 @@ class Block:
 def generate_proof_of_work(index:int, timestamp:datetime, previous_hash: str, transactions:list):
     """ Gera nonces aleatórios até o hash resultante do bloco passe no desafio de zeros iniciais """
 
+    print("Proof of Work Iniciado...")
+
     new_block = None
     while True:
         nonce = random.randint(0, sys.maxsize)
@@ -103,6 +105,7 @@ class Blockchain:
 
     def print_blockchain(self):
         """ Imprime todos os blocos da blockchain atual """
+
         block = self.get_latest_block()
         while block:
             block.print_data()
@@ -110,7 +113,47 @@ class Blockchain:
             index_block = block.get_index()
             block = self.blocks.get(previous_hash)
 
+    def mine(self):
+        """ Tenta minerar um novo bloco para as novas transacoes """
 
-bc = Blockchain()
-bc.start_blockchain()  
-bc.print_blockchain()
+        last_block = self.get_latest_block()
+        last_block_hash = last_block.generate_hash()
+        last_block_index = last_block.get_index()
+        
+        new_block = generate_proof_of_work(last_block_index+1, datetime.now(), last_block_hash, self.transactions_pool.copy())
+        new_block_hash = new_block.generate_hash()
+        self.blocks[new_block_hash] = new_block
+
+        self.transactions_pool.clear()
+
+    def add_transaction(self, transaction:str):
+        """ Adiciona uma nova transacao na pool """
+
+        self.transactions_pool.append(transaction)
+        if len(self.transactions_pool) == 5:
+            self.mine()
+
+
+if __name__ == "__main__":
+    """ O arquivo blockchain é auxiliar para os demais, mas segue um roteiro de execução para testagem """
+
+    bc = Blockchain()
+    bc.start_blockchain()  
+
+    bc.print_blockchain()
+
+    bc.add_transaction("Primeira Mensagem")
+    bc.add_transaction("Segunda Mensagem")
+    bc.add_transaction("Terceira Mensagem")
+    bc.add_transaction("Quarta Mensagem")
+    bc.add_transaction("Quinta Mensagem")
+
+    bc.print_blockchain()
+
+    bc.add_transaction("Sexta Mensagem")
+    bc.add_transaction("Sétima Mensagem")
+    bc.add_transaction("Oitava Mensagem")
+    bc.add_transaction("Nona Mensagem")
+    bc.add_transaction("Décima Mensagem")
+
+    bc.print_blockchain()
