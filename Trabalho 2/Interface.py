@@ -118,7 +118,13 @@ def mostra_opcoes():
     print("2. Conectar com Blockchain de outro Node")
     print("3. Listar Nodes Vizinhos")
     print("4. Mostrar Blockchain Atual")
+    print("5. Criar Transação")
     print("F. Finalizar o Programa. \n")
+
+def criar_transacao():
+    global state
+    transacao = input("Escreva qual será sua transação: ")
+    state["blockchain"].add_transaction(str(transacao))
 
 def menu():
     global state
@@ -135,6 +141,8 @@ def menu():
             listar_nodes_vizinhos()
         elif opcao == "4":
             mostrar_blockchain()
+        elif opcao == "5":
+            criar_transacao()    
         elif opcao.upper() == "F":
             server = rpyc.connect('localhost', state["porta_server"])
             server.close()
@@ -154,5 +162,6 @@ if __name__ == "__main__":
         node.start()
 
         menu()
-    except:
+    except Exception as err:
         bcolors.print_color("\nErro: Erro interno.", "FAIL")
+        bcolors.print_color(err, "FAIL")
