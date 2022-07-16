@@ -231,6 +231,15 @@ class Blockchain:
         if validated:
             block_hash = new_block.generate_hash()
             self.blocks[block_hash] = new_block
+    
+    def remove_until_index_reached(self, index):
+        blocks_to_remove = []
+        for _, block in self.blocks.items():
+            if block.get_index() >= index:
+                blocks_to_remove.append(block.generate_hash())
+        
+        for block_hash in blocks_to_remove:
+            del self.blocks[block_hash]
 
     def return_blocks(self):
         """ Retorna o Set de blocos """

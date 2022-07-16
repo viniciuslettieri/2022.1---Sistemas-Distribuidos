@@ -2,6 +2,7 @@ import rpyc
 import threading
 import os
 import socket    
+import requests
 
 from Node import inicializa_servidor, state
 from Blockchain import Blockchain
@@ -124,12 +125,22 @@ def mostra_opcoes():
     print("3. Listar Nodes Vizinhos")
     if has_blockchain: print("4. Mostrar Blockchain Atual")
     if has_blockchain: print("5. Criar Transação")
+    if has_blockchain: print("6. Criar fork malicioso")
     print("F. Finalizar o Programa. \n")
 
-def create_transaction():
+def criar_transacao():
     global state
     transacao = input("Escreva qual será sua transação: ")
     state["blockchain"].add_transaction(str(transacao))
+
+def iniciar_fork_malicioso():
+    global state
+    blockchain_index = len(state["blockchain"].blocks) - 1
+    index = int(input("Escreva o indice do fork malicioso (atualmente " + str(blockchain_index) + "): "))
+    if (index >= 1 and index <= blockchain_index):
+        state["blockchain"].remove_until_index_reached(index)
+    else:
+        print("Valor Inválido: Insira um índice menor para iniciar o fork malicioso")
 
 def menu():
     global state
@@ -149,7 +160,9 @@ def menu():
         elif opcao == "4" and  has_blockchain:
             mostrar_blockchain()
         elif opcao == "5" and  has_blockchain:
-            create_transaction()    
+            criar_transacao()
+        elif opcao == "6" and has_blockchain:
+            iniciar_fork_malicioso()
         elif opcao.upper() == "F":
             server = rpyc.connect('localhost', state["porta_server"], config={"allow_public_attrs": True})
             server.close()
@@ -164,11 +177,11 @@ if __name__ == "__main__":
     print("Seu Endereço de IP: " + state["endereco_server"])  
     state["porta_server"] = int(input("Insira sua Porta de Servidor: "))
     
-    try:
-        node = threading.Thread(target=inicializa_servidor, args=(state["porta_server"],))
-        node.start()
+    #try:
+    node = threading.Thread(target=inicializa_servidor, args=(state["porta_server"],))
+    node.start()
 
-        menu()
-    except:
-        bcolors.print_color("\nErro: Erro interno.", "FAIL")
+    menu()
+    #except:
+    #    bcolors.print_color("\nErro: Erro interno.", "FAIL")
      
