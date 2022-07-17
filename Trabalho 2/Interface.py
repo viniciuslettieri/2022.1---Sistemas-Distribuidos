@@ -57,6 +57,8 @@ def conectar_com_novos(novos_nodes: set):
         conectar_com_novos(novos_vizinhos)
 
 def iniciar_blockchain():
+    """ Inicializa a blockchain com o bloco genesis """
+
     global state
 
     state["blockchain"] = Blockchain()
@@ -127,6 +129,7 @@ def mostrar_blocos():
 
 def mostra_opcoes():
     global state
+
     has_blockchain = state["blockchain"]
     
     print("\n", "-" * 50)
@@ -142,11 +145,15 @@ def mostra_opcoes():
 
 def criar_transacao():
     global state
+
     transacao = input("Escreva qual será sua transação: ")
     state["blockchain"].add_transaction(str(transacao))
 
 def iniciar_fork_malicioso():
+    """ Remove os blocos maiores que um indice determinado para gerar um fork malicioso """
+
     global state
+
     blockchain_index = len(state["blockchain"].blocks) - 1
     index = int(input("Escreva o indice do fork malicioso (atualmente " + str(blockchain_index) + "): "))
     if (index >= 1 and index <= blockchain_index):

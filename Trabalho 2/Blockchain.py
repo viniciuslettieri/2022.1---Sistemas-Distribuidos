@@ -13,6 +13,32 @@ DESAFIO_ZEROS = 5
 
 datetime_format = "%m/%d/%Y, %H:%M:%S"
 
+
+
+def generate_proof_of_work(index:int, timestamp:datetime, previous_hash: str, transactions:list):
+    """ Gera nonces aleatórios até o hash resultante do bloco passe no desafio de zeros iniciais """
+
+    new_block = None
+    while True:
+        nonce = random.randint(0, sys.maxsize)
+        new_block = Block(index, timestamp, previous_hash, transactions, nonce)
+        if new_block.validate_proof_of_work(): break
+
+    return new_block
+
+def send_new_block_to_neighbors(block):
+    """ Responsável pela propagação de um bloco para os demais nós da rede """
+
+    global state
+
+    neighbors = state["neighbors"]
+    for neighbor in neighbors:
+        server = rpyc.connect(neighbor[0], neighbor[1], config={"allow_public_attrs": True})
+        server.root.add_new_block(block)
+        server.close()
+
+
+
 class Block:
     def __init__(self, index:int, timestamp:datetime, previous_hash: str, transactions:list, nonce: int):
         self.block_data = {
@@ -82,30 +108,6 @@ class Block:
         return hash_result.startswith("0" * DESAFIO_ZEROS)
 
 
-def generate_proof_of_work(index:int, timestamp:datetime, previous_hash: str, transactions:list):
-    """ Gera nonces aleatórios até o hash resultante do bloco passe no desafio de zeros iniciais """
-
-    print("Proof of Work Iniciado...", end=" ")
-
-    new_block = None
-    while True:
-        nonce = random.randint(0, sys.maxsize)
-        new_block = Block(index, timestamp, previous_hash, transactions, nonce)
-        if new_block.validate_proof_of_work(): break
-
-    print(new_block.generate_hash())
-
-    return new_block
-
-def send_new_block_to_neighbors(block):
-        global state
-
-        neighbors = state["neighbors"]
-        for neighbor in neighbors:
-            server = rpyc.connect(neighbor[0], neighbor[1], config={"allow_public_attrs": True})
-            server.root.add_new_block(block)
-            server.close()
-
 class Blockchain:
     def __init__(self, added_blocks={}):
         self.transactions_pool = []
@@ -160,6 +162,11 @@ class Blockchain:
             block = self.blocks.get(previous_hash)
         
         return block
+    
+    def get_blocks(self):
+        """ Retorna o Set de blocos """
+
+        return self.blocks.values()
 
     def print_blockchain(self):
         """ Imprime todos os blocos da blockchain atual """
@@ -216,11 +223,17 @@ class Blockchain:
             last_block_hash = last_block.generate_hash()
             last_block_index = last_block.get_index()
 
+            print("\nIniciando Mineração...")
+
             new_block = generate_proof_of_work(last_block_index+1, datetime.now(), last_block_hash, self.transactions_pool.copy())
             new_block_hash = new_block.generate_hash()
 
+            print("Nonce Encontrado...")
+
             if quantidade_blocos == len(self.blocks) and self.add_block(new_block) == True:
                 break
+
+            print("Recebimento de Outro Bloco durante a Mineração...")
 
         self.transactions_pool.clear()
 
@@ -247,6 +260,9 @@ class Blockchain:
             return False
     
     def remove_until_index_reached(self, index):
+        """ Opção maliciosa, que remove todos os nós maiores ou iguais que um dado índice 
+            para gerar um fork malicioso e testar essa hipótese. """
+
         blocks_to_remove = []
         for _, block in self.blocks.items():
             if block.get_index() >= index:
@@ -254,11 +270,6 @@ class Blockchain:
         
         for block_hash in blocks_to_remove:
             del self.blocks[block_hash]
-
-    def return_blocks(self):
-        """ Retorna o Set de blocos """
-
-        return self.blocks.values()
 
 
 if __name__ == "__main__":
@@ -336,7 +347,7 @@ if __name__ == "__main__":
 
     print("\nPARTE 6: INICIALIZACAO DE BLOCKCHAIN A PARTIR DE OUTRA", "="*60, "\n")
 
-    bc2 = Blockchain(bc1.return_blocks())
+    bc2 = Blockchain(bc1.get_blocks())
 
     print("\nImprimindo a Blockchain Copiada", "-"*60, "\n")
     bc2.print_blockchain()

@@ -5,15 +5,7 @@ from State import state
 
 class Node(rpyc.Service):
     global state
-
-    def on_connect(self, conx):
-        pass
-        # print("connect")
-
-    def on_disconnect(self, conx):
-        pass
-        # print("disconnect")
-
+    
     def exposed_notify_new(self, new_ip, new_port):
         state["neighbors"].add( (new_ip, new_port) )
 
@@ -21,7 +13,7 @@ class Node(rpyc.Service):
         return state["neighbors"]
 
     def exposed_return_blockchain(self):
-        return state["blockchain"].return_blocks()
+        return state["blockchain"].get_blocks()
     
     def exposed_add_new_block(self, block: Block):
         state["blockchain"].add_block(block)
