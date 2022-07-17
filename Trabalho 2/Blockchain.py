@@ -9,7 +9,7 @@ import rpyc
 from State import state
 
 # Determina a quantidade de zeros que o hash precisa ter no início
-DESAFIO_ZEROS = 5
+DESAFIO_ZEROS = 4
 
 datetime_format = "%m/%d/%Y, %H:%M:%S"
 
@@ -257,6 +257,7 @@ class Blockchain:
             self.blocks[block_hash] = new_block
             return True
         else:
+            print("Erro: Bloco Inválido Encontrado.")
             return False
     
     def remove_until_index_reached(self, index):
@@ -270,6 +271,32 @@ class Blockchain:
         
         for block_hash in blocks_to_remove:
             del self.blocks[block_hash]
+    
+    def add_malicious_transaction(self, index):
+        """ Opção maliciosa, que adiciona uma transação em um bloco antigo.
+            Se tentarmos validar a cadeia veremos o erro. """
+
+        block = self.get_latest_block()
+        malicious_hash = block.generate_hash()
+        while block and block.get_index() != index:
+            malicious_hash = block.get_previous_hash()
+            block = self.blocks.get(malicious_hash)
+        
+        if not block or block.get_index() != index:
+            print("Erro: O indice passado não existe na cadeia.")
+        
+        del self.blocks[malicious_hash]
+
+        index = block.get_index()
+        timestamp = datetime.strptime(block.get_timestamp(), datetime_format)
+        previous_hash = block.get_previous_hash()
+        transactions = block.get_transactions().copy()
+        transactions.append("Transacao Maliciosa")
+
+        malicious_block = generate_proof_of_work(index, timestamp, previous_hash, transactions)
+        self.add_block(malicious_block)
+
+        send_new_block_to_neighbors(malicious_block)
 
 
 if __name__ == "__main__":
@@ -351,3 +378,4 @@ if __name__ == "__main__":
 
     print("\nImprimindo a Blockchain Copiada", "-"*60, "\n")
     bc2.print_blockchain()
+

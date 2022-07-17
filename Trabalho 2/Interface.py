@@ -127,6 +127,37 @@ def mostrar_blocos():
     bcolors.print_color("\nBlocos Atuais neste Node:\n", "HEADER")
     state["blockchain"].print_blocks()
 
+
+def criar_transacao():
+    global state
+
+    transacao = input("Escreva qual será sua transação: ")
+    state["blockchain"].add_transaction(str(transacao))
+
+def iniciar_fork_malicioso():
+    """ Remove os blocos maiores que um indice determinado para gerar um fork malicioso """
+
+    global state
+
+    blockchain_index = state["blockchain"].get_latest_block().get_index()
+    index = int(input("Escreva o indice do fork malicioso (atualmente " + str(blockchain_index) + "): "))
+    if (index >= 1 and index <= blockchain_index):
+        state["blockchain"].remove_until_index_reached(index)
+    else:
+        print("Valor Inválido: Insira um índice menor para iniciar o fork malicioso")
+
+def adicionar_transacao_maliciosa():    
+    """ Adiciona uma transacao maliciosa no indice do bloco passado """
+
+    global state
+
+    blockchain_index = state["blockchain"].get_latest_block().get_index()
+    index = int(input("Escreva o indice do bloco a ser inserida a trancação (atualmente " + str(blockchain_index) + "): "))
+    if (index >= 1 and index <= blockchain_index):
+        state["blockchain"].add_malicious_transaction(index)
+    else:
+        print("Valor Inválido: Insira um índice menor para adicionar a transação")
+
 def mostra_opcoes():
     global state
 
@@ -140,26 +171,9 @@ def mostra_opcoes():
     if has_blockchain: print("4. Mostrar Blockchain Atual")
     if has_blockchain: print("5. Mostrar Todos os Blocos")
     if has_blockchain: print("6. Criar Transação")
-    if has_blockchain: print("7. Criar fork malicioso")
+    if has_blockchain: print("7. Criar Fork Malicioso")
+    if has_blockchain: print("8. Adicionar Transacao Maliciosa")
     print("F. Finalizar o Programa. \n")
-
-def criar_transacao():
-    global state
-
-    transacao = input("Escreva qual será sua transação: ")
-    state["blockchain"].add_transaction(str(transacao))
-
-def iniciar_fork_malicioso():
-    """ Remove os blocos maiores que um indice determinado para gerar um fork malicioso """
-
-    global state
-
-    blockchain_index = len(state["blockchain"].blocks) - 1
-    index = int(input("Escreva o indice do fork malicioso (atualmente " + str(blockchain_index) + "): "))
-    if (index >= 1 and index <= blockchain_index):
-        state["blockchain"].remove_until_index_reached(index)
-    else:
-        print("Valor Inválido: Insira um índice menor para iniciar o fork malicioso")
 
 def menu():
     global state
@@ -184,6 +198,8 @@ def menu():
             criar_transacao()
         elif opcao == "7" and has_blockchain:
             iniciar_fork_malicioso()
+        elif opcao == "8" and has_blockchain:
+            adicionar_transacao_maliciosa()
         elif opcao.upper() == "F":
             server = rpyc.connect('localhost', state["porta_server"], config={"allow_public_attrs": True})
             server.close()
@@ -198,11 +214,11 @@ if __name__ == "__main__":
     print("Seu Endereço de IP: " + state["endereco_server"])  
     state["porta_server"] = int(input("Insira sua Porta de Servidor: "))
     
-    try:
-        node = threading.Thread(target=inicializa_servidor, args=(state["porta_server"],))
-        node.start()
+    # try:
+    node = threading.Thread(target=inicializa_servidor, args=(state["porta_server"],))
+    node.start()
 
-        menu()
-    except:
-       bcolors.print_color("\nErro: Erro interno.", "FAIL")
+    menu()
+    # except:
+    #    bcolors.print_color("\nErro: Erro interno.", "FAIL")
      
