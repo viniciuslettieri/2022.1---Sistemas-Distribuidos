@@ -174,8 +174,12 @@ class Blockchain:
         block = self.get_latest_block()
         while block:
             block.print_data()
+            block_index = block.get_index()
             previous_hash = block.get_previous_hash()
             block = self.blocks.get(previous_hash)
+
+        if block_index != 0:
+            print("Erro: A blockchain foi corrompida.")
     
     def print_blocks(self):
         """ Imprime todos os blocos no set de blocos """
@@ -202,7 +206,10 @@ class Blockchain:
             block = self.blocks.get(previous_hash)
             current_index -= 1
         
-        return True
+        if block_index == 0:
+            return True
+        else:
+            return False
 
     def validate_blockchain(self):
         """ Valida se a blockchain atual está válida """
