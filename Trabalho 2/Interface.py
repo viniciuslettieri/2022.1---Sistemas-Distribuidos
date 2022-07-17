@@ -72,7 +72,12 @@ def extrair_blockchain(node_ip, node_port):
 
     try:
         server = rpyc.connect(node_ip, node_port, config={"allow_public_attrs": True})
-        new_blockchain = Blockchain(server.root.return_blockchain())
+        blocks = server.root.return_blockchain()
+
+        if len(blocks) == 0:
+            raise ValueError
+
+        new_blockchain = Blockchain(blocks)
         state["blockchain"] = new_blockchain
         server.close()
 
@@ -186,11 +191,11 @@ if __name__ == "__main__":
     print("Seu Endereço de IP: " + state["endereco_server"])  
     state["porta_server"] = int(input("Insira sua Porta de Servidor: "))
     
-    #try:
-    node = threading.Thread(target=inicializa_servidor, args=(state["porta_server"],))
-    node.start()
+    try:
+        node = threading.Thread(target=inicializa_servidor, args=(state["porta_server"],))
+        node.start()
 
-    menu()
-    #except:
-    #    bcolors.print_color("\nErro: Erro interno.", "FAIL")
+        menu()
+    except:
+       bcolors.print_color("\nErro: Erro interno.", "FAIL")
      

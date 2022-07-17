@@ -9,7 +9,7 @@ import rpyc
 from State import state
 
 # Determina a quantidade de zeros que o hash precisa ter no início
-DESAFIO_ZEROS = 4
+DESAFIO_ZEROS = 5
 
 datetime_format = "%m/%d/%Y, %H:%M:%S"
 
@@ -209,13 +209,18 @@ class Blockchain:
     def mine(self):
         """ Tenta minerar um novo bloco para as novas transacoes """
 
-        last_block = self.get_latest_block()
-        last_block_hash = last_block.generate_hash()
-        last_block_index = last_block.get_index()
-        
-        new_block = generate_proof_of_work(last_block_index+1, datetime.now(), last_block_hash, self.transactions_pool.copy())
-        new_block_hash = new_block.generate_hash()
-        self.blocks[new_block_hash] = new_block
+        while(True):
+            quantidade_blocos = len(self.blocks)
+
+            last_block = self.get_latest_block()
+            last_block_hash = last_block.generate_hash()
+            last_block_index = last_block.get_index()
+
+            new_block = generate_proof_of_work(last_block_index+1, datetime.now(), last_block_hash, self.transactions_pool.copy())
+            new_block_hash = new_block.generate_hash()
+
+            if quantidade_blocos == len(self.blocks) and self.add_block(new_block) == True:
+                break
 
         self.transactions_pool.clear()
 
@@ -237,6 +242,9 @@ class Blockchain:
         if validated:
             block_hash = new_block.generate_hash()
             self.blocks[block_hash] = new_block
+            return True
+        else:
+            return False
     
     def remove_until_index_reached(self, index):
         blocks_to_remove = []
