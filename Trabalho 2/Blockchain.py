@@ -9,7 +9,7 @@ import rpyc
 from State import state
 
 # Determina a quantidade de zeros que o hash precisa ter no início
-DESAFIO_ZEROS = 4
+DESAFIO_ZEROS = 6
 
 datetime_format = "%m/%d/%Y, %H:%M:%S"
 

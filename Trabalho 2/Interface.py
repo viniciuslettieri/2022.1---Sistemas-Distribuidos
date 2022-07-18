@@ -98,8 +98,8 @@ def conectar_com_blockchain():
 
     global state
 
-    outro_node_ip = '127.0.1.1'
-    # outro_node_ip = input("Insira o IP do Node de Origem: ")
+    # outro_node_ip = '127.0.1.1'
+    outro_node_ip = input("Insira o IP do Node de Origem: ")
     outro_node_porta = int(input("Insira a Porta do Node de Origem: "))
     
     print("")
@@ -214,11 +214,11 @@ if __name__ == "__main__":
     print("Seu Endereço de IP: " + state["endereco_server"])  
     state["porta_server"] = int(input("Insira sua Porta de Servidor: "))
     
-    # try:
-    node = threading.Thread(target=inicializa_servidor, args=(state["porta_server"],))
-    node.start()
+    try:
+        node = threading.Thread(target=inicializa_servidor, args=(state["porta_server"],))
+        node.start()
 
-    menu()
-    # except:
-    #    bcolors.print_color("\nErro: Erro interno.", "FAIL")
+        menu()
+    except:
+       bcolors.print_color("\nErro: Erro interno.", "FAIL")
      
